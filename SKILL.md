@@ -87,11 +87,11 @@ Auto-pick the default when the evidence is unambiguous. Ask only when the agent 
 | `preflight` | Invoke `preflight/phylo-preflight`. Validates inputs, writes `preflight.md` + `params.json`. |
 | `run` | Invoke `build/phylo-builder`. Runs the main workflow. |
 | `qc` | Invoke `qc/phylo-qc`. Builds the final report. |
-| `qc-done` | Show the user `$RUN_DIR/qc-report.md`. Ask if they want `visualize/phylo-itol` next (optional — not a Go/No-Go gated phase). |
+| `qc-done` | Show the user `$RUN_DIR/qc-report.md`. Ask if they want `visualize/phylo-itol` or `visualize/phylo-render` next (both optional — not Go/No-Go gated phases). |
 
-**Do not skip preflight.**
+**Do not skip preflight.** The preflight sub-skill computes evidence and writes `params.json` that the run sub-skill consumes.
 
-**`visualize/phylo-itol` is optional and user-triggered**, not part of the Preflight→Run→QC gate chain. Invoke it after `qc-report.md` exists, only when the user asks for iTOL annotation datasets (label styling / colorstrip grouping). See `visualize/phylo-itol/SKILL.md`. The preflight sub-skill computes evidence and writes `params.json` that the run sub-skill consumes.
+**`visualize/phylo-itol` and `visualize/phylo-render` are optional and user-triggered**, not part of the Preflight→Run→QC gate chain. Invoke either (or both — they don't conflict) after `qc-report.md` exists: `phylo-itol` for interactive iTOL annotation datasets (label styling / colorstrip grouping, true italics), `phylo-render` for an offline scriptable SVG/PDF/PNG figure (no italics — a real toyplot limitation, see its SKILL.md). See `visualize/phylo-itol/SKILL.md` and `visualize/phylo-render/SKILL.md`.
 
 ### 0.4 The run command
 
@@ -164,6 +164,7 @@ The agent must stop and warn the user if:
 | "What did the run produce?" | Read `$RUN_DIR/qc-report.md` |
 | "Can I publish this?" | Point to `$RUN_DIR/preflight.md` + `$RUN_DIR/qc-report.md` as audit-trail artifacts. |
 | "Visualize the tree" / "iTOL annotation" / "colorstrip" | Invoke `visualize/phylo-itol` — writes `itol/<sample>_labels.txt` (+ `_colorstrip.txt`, `_legend.md` if a grouping was given). Upload alongside the tree file at itol.embl.de. |
+| "Render a publication figure" / "export tree as PDF/SVG/PNG" | Invoke `visualize/phylo-render` — writes `figures/<sample>.{svg,pdf,png}`. No italics (toyplot limitation) — use `phylo-itol` instead if italic species names are required. |
 
 ## Verification
 

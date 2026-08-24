@@ -15,6 +15,8 @@ modeltest-ng = "*"
 raxml-ng = "*"
 iqtree = "*"
 gotree = "*"
+toytree = "*"
+packaging = "*"  # toyplot's reportlab-based PNG export needs this; not pulled in transitively
 
 [tasks]
 # These are documentation entry points, not scripts — each sub-skill's SKILL.md has the

@@ -8,6 +8,17 @@ Generated:  2026-08-24T20:30:00+08:00
 
 **PASS-WITH-WARNINGS** ⚠️
 
+## Addendum (2026-08-24, later same day): visualize/phylo-itol + visualize/phylo-render added
+
+Two optional (non-gated) sub-skills were added after this report's original run:
+
+- **`visualize/phylo-itol`**: iTOL annotation datasets (italic label styling + colorstrip grouping). Tested against the real 16S tree in both `--regex` and `--groups-tsv` modes, including the unmatched-tip fallback path.
+- **`visualize/phylo-render`**: offline SVG/PDF/PNG figure via `toytree` (new pixi dependency, plus `packaging` which its reportlab-based PNG export needs). Tested against both the iqtree `.treefile` and the raxml-ng `.raxml.supportTBE` tree from the earlier execution runs — both rendered correctly, ladderized, with support labels.
+
+**Real limitation found and documented, not silently worked around**: toytree/toyplot 2.1.0 cannot italicize tip labels — its CSS-style validator rejects `font-style` even though the PDF (reportlab) renderer's own font-selection code reads exactly that key. Confirmed by direct testing (both `tip_labels_style={"font-style": "italic"}` and a `font-family: Helvetica-Oblique` workaround fail with the same validator error). Documented as a known ceiling in `visualize/phylo-render/SKILL.md`, with `visualize/phylo-itol` (true italics via iTOL's web renderer) pointed to as the alternative when italics matter.
+
+Re-verified after the addition: all 8 `SKILL.md` files (was 6) have valid frontmatter, docs-corpus now covers 8 tools (added `toytree`, primary source = module/function docstrings since it's a library not a CLI), `pixi lock --dry-run` still resolves cleanly, both new Python scripts compile.
+
 All structural checks pass. Both aligner branches (muscle, mafft), both tree-tool branches (iqtree, raxml-ng+modeltest-ng), and the checkpoint-invalidation (SP1) logic were execution-tested end-to-end on real NCBI data. One bug found and fixed during testing (see below). Only remaining non-blocking item: `git init` not yet run, target GitHub repo name already exists.
 
 ## Structural checks

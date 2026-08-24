@@ -13,7 +13,8 @@ The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent
 | **1** | **Preflight** (The Audit) | Validate inputs, compute evidence, write `preflight.md` + `params.json`. | `/preflight` | `$RUN_DIR/preflight.md` + `$RUN_DIR/params.json` |
 | **2** | **Run** (The Workflow) | Execute the main workflow. | `/build` | `$RUN_DIR/checkpoints/tree.done.json + trees/` |
 | **3** | **QC** (The Report) | Build the final report. | `/qc` | `$RUN_DIR/qc-report.md` |
-| *opt.* | **Visualize** (iTOL annotation) | Generate iTOL label-style + colorstrip datasets. Not gated — user-triggered after QC. | `/visualize` | `$RUN_DIR/itol/*.txt` |
+| *opt.* | **Visualize** (iTOL annotation) | Generate iTOL label-style + colorstrip datasets. Not gated — user-triggered after QC. | `visualize/phylo-itol` | `$RUN_DIR/itol/*.txt` |
+| *opt.* | **Render** (static figure) | Offline SVG/PDF/PNG figure via toytree — no browser/upload. Not gated. | `visualize/phylo-render` | `$RUN_DIR/figures/*.{svg,pdf,png}` |
 
 ## When to Use This Skill
 
@@ -30,7 +31,7 @@ The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent
 
 ## Prerequisites
 
-- A pixi environment with the required tools: `muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree`.
+- A pixi environment with the required tools: `muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree, toytree`.
 - A multi-FASTA file of unaligned, same-marker sequences (at least 4 taxa) with unique sequence headers.
 
 ## Installation
@@ -68,6 +69,9 @@ cat $RUN_DIR/qc-report.md
 # Optional: iTOL annotation datasets (after QC, user-triggered, not gated)
 python3 visualize/phylo-itol/scripts/itol_tip_labels.py "$TREE" -o "$RUN_DIR/itol/labels.txt" --gotree-cmd "pixi run gotree"
 python3 visualize/phylo-itol/scripts/itol_colorstrip.py "$TREE" -o "$RUN_DIR/itol/colorstrip.txt" --regex '^([A-Za-z]+)_' --gotree-cmd "pixi run gotree"
+
+# Optional: offline SVG/PDF/PNG figure (after QC, user-triggered, not gated)
+python3 visualize/phylo-render/scripts/render_tree.py "$TREE" -o "$RUN_DIR/figures/tree"
 ```
 
 Each phase has explicit **Inputs/Outputs contract** at the top of its sub-skill SKILL.md. If the upstream artifact is missing, the sub-skill **must refuse to proceed** and tell the user which upstream step to run.
@@ -78,7 +82,7 @@ Each phase has explicit **Inputs/Outputs contract** at the top of its sub-skill 
 phylogenetics-agent/
 ├── SKILL.md                            # Master orchestrator (router only)
 ├── README.md                           # This file
-├── pixi.toml                           # Pixi env: muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree
+├── pixi.toml                           # Pixi env: muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree, toytree
 ├── preflight/
 │   └── phylo-preflight/SKILL.md      # Phase 1 — input validation
 ├── build/
@@ -89,12 +93,16 @@ phylogenetics-agent/
 │   └── phylo-debug/SKILL.md          # Failure interpreter (signature library)
 ├── battle-test/
 │   └── phylo-battle-test/SKILL.md    # Structural smoke tests
-├── visualize/
-│   └── phylo-itol/                   # Optional — iTOL annotation datasets (not gated)
+├── visualize/                           # Both optional, not gated, don't conflict
+│   ├── phylo-itol/                   # Interactive iTOL annotation datasets
+│   │   ├── SKILL.md
+│   │   └── scripts/
+│   │       ├── itol_tip_labels.py
+│   │       └── itol_colorstrip.py
+│   └── phylo-render/                 # Offline SVG/PDF/PNG figure (toytree)
 │       ├── SKILL.md
 │       └── scripts/
-│           ├── itol_tip_labels.py
-│           └── itol_colorstrip.py
+│           └── render_tree.py
 ├── docs-corpus/                         # Offline Markdown snapshot of upstream tool docs
 │   └── muscle/
 │       └── README.md

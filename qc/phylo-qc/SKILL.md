@@ -151,4 +151,4 @@ Pipeline:   phylogenetics-agent v1.0.0
 
 ## Handoff
 
-> QC complete. Verdict: `<verdict>`. `qc-report.md` is the final deliverable — the orchestrator's `qc-done` stage just shows it to the user. Optional next step: `visualize/phylo-itol` for iTOL label styling / colorstrip annotation datasets (not gated — invoke only if the user asks).
+> QC complete. Verdict: `<verdict>`. `qc-report.md` is the final deliverable — the orchestrator's `qc-done` stage just shows it to the user. Optional next steps (not gated, invoke only if the user asks): `visualize/phylo-itol` for interactive iTOL label styling / colorstrip datasets, or `visualize/phylo-render` for an offline SVG/PDF/PNG figure.
