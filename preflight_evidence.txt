@@ -1,0 +1,14 @@
+Skill name: phylogenetics-agent (valid kebab-case)
+Skill name: phylogenetics-agent (COLLISION)
+Target directory: /home/cheahhl814/claude_workspace/bioinformatics/AIx-BIO/skills/phylogenetics-agent (writable)
+Pixi: pixi 0.70.1 (on PATH)
+Git: NOT initialized (will init)
+Disk space: 147 GB free
+GitHub repo: EXISTS
+Tool: muscle (FOUND)
+Tool: mafft (FOUND)
+Tool: trimal (FOUND)
+Tool: modeltest-ng (FOUND)
+Tool: raxml-ng (FOUND)
+Tool: iqtree (FOUND)
+Tool: gotree (FOUND)

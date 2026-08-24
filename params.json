@@ -1,0 +1,54 @@
+{
+  "skill_name": "phylogenetics-agent",
+  "skill_title": "Phylogenetics Agent",
+  "skill_description": "Agentic single-marker maximum-likelihood phylogenetic tree pipeline (align -> trim -> model-select -> tree -> render), inspired by the MLTree Nextflow pipeline, rebuilt as a checkpointed BettaMt-pattern skill with per-stage preflight, resumable checkpoints, and stage-swap flexibility (muscle/mafft aligner, raxml-ng/iqtree tree tool).",
+  "skill_version": "1.0.0",
+  "skill_updated": "2026-08-24",
+  "skill_triggers": [
+    "phylogenetic tree",
+    "ML tree",
+    "maximum likelihood tree",
+    "raxml",
+    "iqtree",
+    "phylogenetics agent",
+    "build a tree from these sequences",
+    "MLTree"
+  ],
+  "run_dir": "/home/cheahhl814/claude_workspace/bioinformatics/AIx-BIO/skills/phylogenetics-agent",
+  "skills_root": "/home/cheahhl814/claude_workspace/bioinformatics/AIx-BIO/skills",
+  "github_org": "cheahhl814",
+  "github_repo": "github.com/cheahhl814/phylogenetics-agent",
+  "github_repo_status": "exists",
+  "skill_shape": "multi-tool-pipeline",
+  "sub_skills": ["preflight", "run", "qc", "debug", "battle-test"],
+  "source_pipeline": "/home/cheahhl814/claude_workspace/bioinformatics/PHYLOGENETIC/MLTree-main",
+  "tool_inventory": [
+    {"name": "muscle", "version": "*", "role": "aligner (default)", "status": "found"},
+    {"name": "mafft", "version": "*", "role": "aligner (alternative)", "status": "found"},
+    {"name": "trimal", "version": "*", "role": "alignment trimming", "status": "found"},
+    {"name": "modeltest-ng", "version": "*", "role": "substitution model selection (raxml branch)", "status": "found"},
+    {"name": "raxml-ng", "version": "*", "role": "tree inference (default)", "status": "found"},
+    {"name": "iqtree", "version": "*", "role": "tree inference (alternative, built-in ModelFinder)", "status": "found"},
+    {"name": "gotree", "version": "*", "role": "ASCII tree rendering", "status": "found"}
+  ],
+  "pixi_available": true,
+  "git_initialized": false,
+  "disk_gb_free": 147,
+  "target_tiers": ["large"],
+  "with_nextflow_runner": false,
+  "nextflow_runner": null,
+  "checkpoint_design": {
+    "stages": ["align", "trim", "model_select", "tree", "render"],
+    "checkpoint_file_pattern": "$RUN_DIR/checkpoints/<stage>.done.json",
+    "resume_rule": "run sub-skill checks for the latest completed checkpoint and resumes from the next stage instead of re-running from scratch",
+    "stage_swap_points": {
+      "align": "muscle (default, -super5 if input > 500 seqs) or mafft --auto",
+      "tree": "raxml-ng (bootstrap + modeltest-ng model selection) or iqtree (ModelFinder + ultrafast bootstrap)"
+    }
+  },
+  "verdict": "GO-WITH-WARNINGS",
+  "warnings": [
+    "github.com/cheahhl814/phylogenetics-agent already exists as a repo (description: 'Nextflow phylogenetic pipelines (mitogenome + ML tree) + agent skills. Project-local fork.') — confirm before first push whether to reuse or rename."
+  ],
+  "generated": "2026-08-24T19:45:00+08:00"
+}

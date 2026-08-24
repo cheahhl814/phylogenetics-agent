@@ -1,0 +1,24 @@
+# Build artifacts
+work/
+results/
+.nextflow.log*
+
+# OS / editor
+.DS_Store
+*.swp
+*~
+*.pyc
+
+# Python
+__pycache__/
+*.egg-info/
+
+# Docs-corpus fingerprints (regenerable)
+docs-corpus/.fingerprints
+
+# Pixi
+.pixi/
+pixi.lock
+
+# Run-time checkpoints (per-run artifacts, not part of the skill itself)
+checkpoints/
