@@ -35,7 +35,8 @@ triggers:
 
 ```bash
 for f in SKILL.md preflight/phylo-preflight/SKILL.md build/phylo-builder/SKILL.md \
-         qc/phylo-qc/SKILL.md debug/phylo-debug/SKILL.md battle-test/phylo-battle-test/SKILL.md; do
+         qc/phylo-qc/SKILL.md debug/phylo-debug/SKILL.md battle-test/phylo-battle-test/SKILL.md \
+         visualize/phylo-itol/SKILL.md; do
     python3 -c "
 import yaml
 fm = open('$f').read().split('---')[1]
