@@ -117,7 +117,13 @@ if [ "$ALIGNER" = muscle ]; then
     pixi run muscle $ARG "$FASTA" -output "$run_dir/alignment/${SAMPLE}_muscle.fasta"
     MSA="$run_dir/alignment/${SAMPLE}_muscle.fasta"
 else
-    pixi run mafft --auto "$FASTA" > "$run_dir/alignment/${SAMPLE}_mafft.fasta"
+    # --adjustdirection auto-detects and reverse-complements any input sequence
+    # that aligns better in the opposite orientation (mixed-strand FASTA is a
+    # real risk when combining own sequenced data with NCBI submissions — see
+    # phylo-preflight SP7). It prefixes flipped headers with "_R_" — this can
+    # break an exact-substring --outgroup match, so re-check SP4 after this stage
+    # if the outgroup taxon happened to be one of the flipped sequences.
+    pixi run mafft --auto --adjustdirection "$FASTA" > "$run_dir/alignment/${SAMPLE}_mafft.fasta"
     MSA="$run_dir/alignment/${SAMPLE}_mafft.fasta"
 fi
 cd "$ckpt" && write_checkpoint align "$FASTA" "$MSA"
@@ -212,6 +218,8 @@ For `tree_tool=raxml`, `qc/phylo-qc` reads `${SAMPLE}.supportTBE.tree.txt` as th
 | iqtree `ERROR: Sequences not found for taxon` (outgroup) | Same as above, IQ-TREE's own outgroup check | Same fix. |
 | gotree `draw text` produces empty/garbled output | Passed the wrong file, or this checkpoint predates the v1.0.0 fix that renders both FBP and TBE (not just the first glob match) | Re-run stage 5 — `SUPPORT_TREES` now iterates both `*.raxml.supportFBP` and `*.raxml.supportTBE` for the raxml branch, matching MLTree-main's `flatten().filter()` channel pattern that rendered both. |
 | Any stage command not found | pixi env missing that tool | `pixi install` in `$RUN_DIR` (or the skill dir), or re-check preflight SP6. |
+| `raxml-ng`/`iqtree` outgroup "taxon not found" only on the mafft branch, worked on muscle | mafft's `--adjustdirection` reverse-complemented the outgroup sequence and renamed its header with an `_R_` prefix, so it no longer exact-matches the `outgroup` string from `params.json` | Re-check the aligned FASTA's headers for an `_R_` prefix on the outgroup taxon; update `outgroup` in `params.json` to the prefixed name, or re-run preflight SP4 against the post-align headers. |
+| muscle branch has mixed-strand sequences (flagged at preflight SP7) | MUSCLE has no built-in `--adjustdirection`-equivalent auto-orientation flag | Either switch `aligner=mafft` for this run (SP2 governs the swap), or reverse-complement the offending sequences in the input FASTA by hand before running muscle. |
 
 ## Verification
 

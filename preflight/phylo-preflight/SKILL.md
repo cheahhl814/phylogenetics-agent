@@ -92,6 +92,14 @@ Do NOT use if `params.json` for this run already exists with a `GO`/`GO-WITH-WAR
 
 **Auto-pick when**: all needed tools resolve. Note: only the tools needed for the *chosen* `aligner`/`tree_tool` are required — e.g. if `tree_tool=iqtree`, `modeltest-ng` is not needed (IQ-TREE's ModelFinder replaces it).
 
+### SP7 — Mixed-strand orientation suspected
+
+| Trigger | Evidence | Action |
+| --- | --- | --- |
+| A k-mer-overlap heuristic (§2, below) finds ≥1 sequence whose reverse complement shares substantially more 11-mers with the reference (first) sequence than its as-given orientation does | Aligners assume a single consistent strand; a reverse-complemented sequence aligned against forward-strand sequences produces a silently garbage alignment, not an error — this is a real risk whenever combining own sequenced/assembled data with NCBI submissions (GenBank does not enforce a canonical strand), including sequences pulled in via `preflight/phylo-taxon-sampling` | Ask: "`<N>` of `<total>` sequences look reverse-complemented relative to the rest: `<list>`. Pick: (A) use `aligner=mafft` with `--adjustdirection` (auto-detects and flips at the align stage — recommended, see `build/phylo-builder` stage 1), (B) I'll reverse-complement them myself first, (C) proceed anyway (only safe if you've already confirmed strand consistency by another means)" |
+
+**Auto-pick when**: no sequence's revcomp k-mer overlap exceeds its forward-orientation overlap. No ask. Note: this is a heuristic on unaligned sequences, not a guarantee — real alignment-time detection (mafft `--adjustdirection`) is the authoritative check; this SP exists to catch it *before* hours are spent on trimming/tree stages with muscle, which has no auto-orientation flag.
+
 ## Procedure
 
 ### 1. Gather inputs
@@ -134,6 +142,48 @@ if [ -n "$OUTGROUP" ]; then
     done
 fi
 
+# SP7: quick k-mer-overlap heuristic for mixed strand orientation. Not a real
+# alignment — just checks whether each sequence's revcomp shares more 11-mers
+# with the first (reference) sequence than its as-given orientation does.
+python3 - "$FASTA" <<'PY' | tee -a "$RUN_DIR/preflight_evidence.txt"
+import sys, re
+K = 11
+comp = str.maketrans("ACGTacgt", "TGCAtgca")
+
+def seqs(path):
+    name, buf = None, []
+    for line in open(path):
+        if line.startswith(">"):
+            if name:
+                yield name, "".join(buf).upper()
+            name, buf = line[1:].strip().split()[0], []
+        else:
+            buf.append(line.strip())
+    if name:
+        yield name, "".join(buf).upper()
+
+def kmers(s):
+    return {s[i:i+K] for i in range(len(s) - K + 1)}
+
+records = list(seqs(sys.argv[1]))
+if len(records) < 2:
+    print("Strand check: skipped (< 2 sequences)")
+else:
+    ref_name, ref_seq = records[0]
+    ref_kmers = kmers(ref_seq)
+    flagged = []
+    for name, seq in records[1:]:
+        fwd_overlap = len(kmers(seq) & ref_kmers)
+        rc = seq.translate(comp)[::-1]
+        rc_overlap = len(kmers(rc) & ref_kmers)
+        if rc_overlap > fwd_overlap and rc_overlap >= 5:
+            flagged.append(name)
+    if flagged:
+        print(f"Strand check: {len(flagged)}/{len(records)-1} sequences look reverse-complemented relative to '{ref_name}': {flagged}")
+    else:
+        print(f"Strand check: OK, no sequence looks reverse-complemented relative to '{ref_name}'")
+PY
+
 for TOOL in "$ALIGNER" trimal $([ "$TREE_TOOL" = raxml ] && [ -z "$MODEL" ] && echo modeltest-ng) "$([ $TREE_TOOL = raxml ] && echo raxml-ng || echo iqtree)" gotree; do
     pixi run --manifest-path "$RUN_DIR/pixi.toml" "$TOOL" --version >/dev/null 2>&1 \
         && echo "Tool $TOOL: available" | tee -a "$RUN_DIR/preflight_evidence.txt" \
@@ -156,6 +206,7 @@ done
   "outgroup": "",
   "bootstrap_replicates": 1000,
   "sequence_type": "nucleotide",
+  "strand_flagged_sequences": [],
   "verdict": "GO",
   "warnings": [],
   "generated": "<ISO8601>"
@@ -167,7 +218,7 @@ done
 ## Interpretation Guidelines
 
 - **GO**: ≥ 4 sequences, no duplicate/empty headers, alphabet unambiguous, outgroup (if given) matches, all needed tools available.
-- **GO-WITH-WARNINGS**: auto-fixed duplicates, or outgroup dropped, or large-dataset auto-flag set — proceed but the warning is visible in the run report.
+- **GO-WITH-WARNINGS**: auto-fixed duplicates, or outgroup dropped, or large-dataset auto-flag set, or mixed-strand sequences flagged (SP7) and the user chose to proceed with `mafft --adjustdirection` or a manual fix — proceed but the warning is visible in the run report.
 - **NO-GO**: < 4 sequences and user declines to proceed, or a needed tool is missing and the user has no path to install it.
 
 ## Troubleshooting — Signature library
@@ -180,6 +231,8 @@ done
 | Non-nucleotide fraction > 5% but < 95%     | Ambiguity codes (IUPAC) or genuinely mixed input                                       | Check with `head -20 <fasta>`; IUPAC codes (R,Y,S,W,K,M...) are fine for nt, just extend the regex — don't treat as mixed unless truly aa. |
 | Outgroup not found                         | Typo, or header uses a different delimiter/format than expected                        | `grep '^>' <fasta> \| grep -i '<partial-name>'` to find the real header string.                                                            |
 | `pixi run <tool> --version` hangs          | Tool not installed and pixi trying to solve on the fly                                 | `pixi install` first, then re-check.                                                                                                       |
+| Strand check flags sequences that look fine | K-mer heuristic runs on unaligned raw sequences (SP7) — short/repetitive regions near the `rc_overlap >= 5` floor can false-positive | Spot-check by eye, or just proceed — `mafft --adjustdirection` at align time is the authoritative check, this is an early warning only. |
+| Strand check misses a genuinely flipped sequence | Heuristic only compares against the *first* sequence in the file; if that reference happens to be short/low-complexity/itself flipped, matches get missed | Reorder a known-good sequence to the top of the FASTA and re-run, or just default to `aligner=mafft` whenever combining data from multiple sources. |
 
 ## Verification
 

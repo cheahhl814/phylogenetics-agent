@@ -36,6 +36,17 @@ New optional pre-preflight stage: `preflight/phylo-taxon-sampling` — broadens 
 
 Re-verified after fixes: all 9 `SKILL.md` files (was 8) have valid frontmatter, docs-corpus now covers 10 tools (added `entrez-direct`, `vsearch`), `pixi lock --dry-run` still resolves cleanly, script compiles.
 
+## Addendum (2026-08-25, later same day): mixed-strand orientation handling
+
+Added strand-orientation safety net across two sub-skills:
+
+- **`preflight/phylo-preflight` SP7**: a new k-mer-overlap heuristic (11-mers, compared against the first sequence in the FASTA) flags any sequence whose reverse complement shares more k-mers with the reference than its as-given orientation — catching the case where own-sequenced data and NCBI-sourced sequences (including ones pulled via `phylo-taxon-sampling`) are mixed at inconsistent strand orientation. This matters because aligners don't auto-detect strand: a reverse-complemented sequence aligned against forward-strand sequences produces a silently garbage alignment, not an error.
+- **`build/phylo-builder` stage 1 (mafft branch)**: now runs with `--adjustdirection`, which auto-detects and flips any misoriented sequence at align time (confirmed via a real revcomp test) — the authoritative fix, with SP7 as an early warning before hours are spent on trimming/tree stages. Documented the side effect: flipped headers get an `_R_` prefix, which can break an exact-substring `--outgroup` match downstream (new troubleshooting rows added). MUSCLE has no equivalent flag, so the muscle branch's fix path is "switch to mafft or fix the input by hand."
+
+**Tested with real data**: the k-mer heuristic was verified against a synthetic 4-taxon FASTA with one sequence deliberately reverse-complemented — correctly flagged only that sequence (`fwd=0, rc=202` vs. `fwd≈200, rc=0` for the other three). `mafft --adjustdirection` was verified against a genuine revcomp pair — correctly reoriented and re-labeled the flipped sequence with `_R_`.
+
+Re-verified after the change: all 9 `SKILL.md` files still have valid frontmatter, `phylo-preflight` now has 16 signature-library rows / `phylo-builder` has 18 (both still ≥3), `pixi lock --dry-run` still resolves cleanly.
+
 ## Structural checks
 
 | Check | Verdict | Value |
