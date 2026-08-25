@@ -13,7 +13,7 @@ The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent
 | *opt.* | **Taxon Sampling** (broaden dataset) | Pull additional same-marker sequences from NCBI (genus/family/etc.) + an outgroup, before preflight. Not gated — user-triggered. | `preflight/phylo-taxon-sampling` | `$RUN_DIR/taxon_sampling/expanded.fasta` + summary/metadata CSVs |
 | **1** | **Preflight** (The Audit) | Validate inputs, compute evidence, write `preflight.md` + `params.json`. | `/preflight` | `$RUN_DIR/preflight.md` + `$RUN_DIR/params.json` |
 | **2** | **Run** (The Workflow) | Execute the main workflow. | `/build` | `$RUN_DIR/checkpoints/tree.done.json + trees/` |
-| **3** | **QC** (The Report) | Build the final report. | `/qc` | `$RUN_DIR/qc-report.md` |
+| **3** | **QC** (The Report) | Build the final report + automated interpretation (weak clades, long-branch outliers, outgroup monophyly). | `/qc` | `$RUN_DIR/qc-report.md` |
 | *opt.* | **Prune** (curate taxa) | Trim the final tree to a keep list / exclude list / reference-tree tip set via `gotree prune`. Not gated — user-triggered after QC. | `prune/phylo-prune` | `$RUN_DIR/pruned/*_pruned.nwk` |
 | *opt.* | **Visualize** (iTOL annotation) | Generate iTOL label-style + colorstrip datasets. Not gated — user-triggered after QC. | `visualize/phylo-itol` | `$RUN_DIR/itol/*.txt` |
 | *opt.* | **Render** (static figure) | Offline SVG/PDF/PNG figure via toytree — no browser/upload. Not gated. | `visualize/phylo-render` | `$RUN_DIR/figures/*.{svg,pdf,png}` |
@@ -111,7 +111,10 @@ phylogenetics-agent/
 ├── build/
 │   └── phylo-builder/SKILL.md        # Phase 2 — main workflow
 ├── qc/
-│   └── phylo-qc/SKILL.md             # Phase 3 — final report
+│   └── phylo-qc/                     # Phase 3 — final report + automated interpretation
+│       ├── SKILL.md
+│       └── scripts/
+│           └── qc_report.py
 ├── debug/
 │   └── phylo-debug/SKILL.md          # Failure interpreter (signature library)
 ├── battle-test/

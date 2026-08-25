@@ -146,3 +146,15 @@ New optional stage: `prune/phylo-prune`, wrapping `gotree prune` (already a pipe
 - `prune/phylo-prune/scripts/prune_tree.py` — thin gotree-flag-translation wrapper + pre-check diff + report writer, no shell=True (argv-list `subprocess.run`, consistent with `taxon_sampling.py`'s established convention).
 - Wired into orchestrator `SKILL.md` (stage-routing note + common-follow-ups row), `README.md` (pipeline table row, usage example, repo layout tree), `battle-test/phylo-battle-test/SKILL.md` (frontmatter-check loop).
 - Structural checks re-run: all 10 `SKILL.md` files pass frontmatter validation, `prune/phylo-prune/SKILL.md` has 9 signature-library rows, script compiles and `--help` runs clean.
+
+## Addendum (2026-08-25, later same day): automated result interpretation added to qc/phylo-qc
+
+`qc/phylo-qc` (v1.0.0 → v1.1.0) previously only reported an aggregate mean/min bootstrap number, parsed via a crude Newick regex. Replaced with a real script (`qc/phylo-qc/scripts/qc_report.py`) built on `gotree stats edges`/`stats tips`/`stats monophyletic` (all already verified live, no new deps):
+
+- **Weak clades**: internal edges below a support threshold (default 70%) are listed individually with clade size, not just averaged away.
+- **Long-branch outliers**: terminal branch lengths flagged via a median + 3×MAD test (skipped under 4 tips, where MAD is meaningless) — the classic signature of a misidentified/contaminant sequence or alignment artifact. Ties into `prune/phylo-prune` as the fix.
+- **Outgroup monophyly**: if `params.json` names an outgroup, its matched tip(s) are tested with `gotree stats monophyletic` — a non-monophyletic outgroup is a real QC signal (wrong taxon, or a genuinely surprising topology), previously silently unreported.
+
+**Verified live** against the real `16s_10genera.contree` test tree: both a single-tip outgroup (trivially monophyletic) and a two-taxon non-sister outgroup (correctly flagged `False`); weak-clade/long-branch detection produced correct, non-empty tables on the actual 10-genus tree (3 weak clades, 2 long-branch outliers: *M. tuberculosis*, *P. aeruginosa* — the two most basal/divergent taxa in this test set, as expected). Caught and fixed one bug during testing: `gotree stats tips`' tab-separated columns are `tree, id, nneigh, name, ExternalBranch, RootToTip` — the tip-name column is index 3, not 2 as first written.
+
+Added SP2 (long-branch outlier) and SP3 (outgroup non-monophyly) stop points; extended the signature library from 3 to 8 rows. Re-verified: all 10 `SKILL.md` files still pass frontmatter validation, `pixi lock --dry-run` unaffected (no new deps), script compiles.
