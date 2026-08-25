@@ -1,8 +1,8 @@
 ---
 name: phylo-render
-description: 'Render an offline, scriptable publication-format tree figure (SVG/PDF/PNG) from the tree build/phylo-builder produces, using toytree (matplotlib/toyplot-backed, no browser or upload needed). Complements visualize/phylo-itol: use phylo-render for batch/CI-friendly static figures, phylo-itol for interactive annotation with true italic tip labels. Triggers: "render the tree figure", "publication tree image", "export tree as PDF/SVG/PNG", "phylo-render", "toytree".'
-version: 1.0.0
-updated: "2026-08-24"
+description: 'Render an offline, scriptable publication-format tree figure (SVG/PDF/PNG) from the tree build/phylo-builder produces, using toytree (matplotlib/toyplot-backed, no browser or upload needed). If params.json names an outgroup, the tree is rerooted on it (toytree native .root(), falling back to MRCA rooting if the outgroup is not monophyletic) before drawing. Complements visualize/phylo-itol: use phylo-render for batch/CI-friendly static figures, phylo-itol for interactive annotation with true italic tip labels. Triggers: "render the tree figure", "publication tree image", "export tree as PDF/SVG/PNG", "phylo-render", "toytree".'
+version: 1.1.0
+updated: "2026-08-25"
 triggers:
   - "render the tree figure"
   - "publication tree image"
@@ -14,7 +14,7 @@ triggers:
 
 # phylo-render
 
-> **v1.0.0.** Optional visualization phase of `phylogenetics-agent`, run after `qc/phylo-qc`, alongside `visualize/phylo-itol`. Produces a static SVG/PDF/PNG figure directly from the Newick tree — no browser, no upload, scriptable/batch-friendly. Uses [toytree](https://toytree.readthedocs.io) (built on toyplot).
+> **v1.1.0.** Optional visualization phase of `phylogenetics-agent`, run after `qc/phylo-qc`, alongside `visualize/phylo-itol`. Produces a static SVG/PDF/PNG figure directly from the Newick tree — no browser, no upload, scriptable/batch-friendly. Uses [toytree](https://toytree.readthedocs.io) (built on toyplot). If `params.json` names an outgroup, `render_tree.py` reroots on it (toytree's own `.root()`, verified live — no `gotree` call needed here since toytree already loads the tree) before drawing, falling back to rooting at the outgroup's MRCA if it isn't monophyletic (matching `gotree reroot outgroup`'s default behavior in `phylo-itol`).
 
 ## When to use this vs. `phylo-itol`
 
@@ -61,6 +61,14 @@ triggers:
 
 **Auto-pick when**: `tree_tool=iqtree`, or the user didn't express a percentage expectation. No ask.
 
+### SP3 — Outgroup rooting fell back to MRCA, or failed entirely
+
+| Trigger | Evidence | Action |
+| --- | --- | --- |
+| `render_tree.py` prints `outgroup [...] is not monophyletic — rooted at their common ancestor instead`, or `rooting on [...] failed (...) — tree left as-is` (both verified live) | The named outgroup doesn't form a clean clade in this tree (same underlying issue as `qc/phylo-qc` SP3 and `phylo-itol` SP4); the second message means even the MRCA fallback failed (e.g. the MRCA is already the tree's root) | Ask: "Outgroup rooting for the figure `<succeeded via MRCA fallback / failed entirely>`. Pick: (A) accept the current rooting, (B) re-check the outgroup choice, (C) render without an outgroup (topology as `build/phylo-builder` produced it)" |
+
+**Auto-pick when**: `--root-outgroup` rooted cleanly, or wasn't given. No ask.
+
 ## Procedure
 
 ### 1. Locate the tree file
@@ -71,17 +79,21 @@ Same logic as `visualize/phylo-itol` step 1 — default to `.treefile` (iqtree) 
 
 ```bash
 mkdir -p "$run_dir/figures"
-python3 visualize/phylo-render/scripts/render_tree.py "$TREE" \
+OUTGROUP=$(python3 -c "import json; print(json.load(open('$run_dir/params.json')).get('outgroup') or '')")
+
+pixi run python3 visualize/phylo-render/scripts/render_tree.py "$TREE" \
     -o "$run_dir/figures/${sample}" \
-    --formats svg,pdf,png
+    --formats svg,pdf,png \
+    ${OUTGROUP:+--root-outgroup "$OUTGROUP"}
 ```
 
-Useful flags: `--no-support-labels` (topology-only), `--no-ladderize`, `--width`/`--height`, `--font-size`.
+Useful flags: `--no-support-labels` (topology-only), `--no-ladderize`, `--width`/`--height`, `--font-size`, `--root-outgroup NAME[,NAME...]` (substring-matched against tip labels; omit if no outgroup was set at preflight).
 
 ## Interpretation Guidelines
 
 - **Support values shown, tree ladderized, all 3 formats written**: normal success.
 - **Warning "no support values found"**: route to SP1 — likely the wrong tree file was passed.
+- **Warning about `--root-outgroup` matching no tip / rooting failing**: route to SP3 — the figure was still written, just without the intended rooting.
 
 ## Troubleshooting — Signature library
 
@@ -93,11 +105,15 @@ Useful flags: `--no-support-labels` (topology-only), `--no-ladderize`, `--width`
 | Figure looks fine but support labels show `0.xx` instead of a percentage | This is the raxml TBE tree — expected, see SP2 | Switch to `.raxml.supportFBP` if a 0–100 scale is wanted. |
 | `WARNING: no support values found` | Wrong tree file, or genuinely unsupported topology | Route to SP1. |
 | Figure is very cramped / tip labels overlap | `--height` too small for the tip count | Default height is `28px * ntips` (min 300) — for very large trees, raise `--height` further or drop `--width`. |
+| `--root-outgroup '<X>' matched no tip label` | Substring match against tip labels found nothing — typo, or the `_R_`-prefix strand-flip gotcha (see `prune/phylo-prune` SP2) | Check `tree.get_tip_labels()` / `gotree stats tips` for the real name; figure still renders, just unrooted. |
+| `outgroup [...] is not monophyletic — rooted at their common ancestor instead` | Outgroup taxa don't form a clade in this tree | Route to SP3 — same underlying issue as `qc/phylo-qc` SP3. |
+| `rooting on [...] failed (Cannot root unrooted tree on the pseudo-root...)` | The outgroup's MRCA is already the tree's root, so even the fallback can't produce a different rooting | Route to SP3 option C — the outgroup choice doesn't actually constrain this topology; render without rooting or re-check the choice. |
 
 ## Verification
 
 - [ ] `$RUN_DIR/figures/<sample>.{svg,pdf,png}` all exist.
 - [ ] Support labels present unless the user explicitly asked for `--no-support-labels`.
+- [ ] If `params.json` has a non-empty `outgroup`: no unhandled warning in stderr about `--root-outgroup`, or the warning was routed through SP3.
 
 ## What NOT to do
 

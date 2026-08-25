@@ -7,6 +7,12 @@ instead of a static figure). Support values are auto-detected from internal
 node labels (works with both IQ-TREE ultrafast-bootstrap .treefile and
 RAxML-NG .raxml.supportFBP/supportTBE outputs).
 
+--root-outgroup NAME[,NAME...] reroots the tree (toytree's native .root(), no gotree
+call) before drawing, substring-matched against tip labels. If the outgroup isn't
+monophyletic, falls back to rooting at its MRCA (matching gotree reroot outgroup's
+default behavior); if even that fails (e.g. the MRCA is already the tree's root),
+warns and leaves the tree as originally rooted rather than crashing.
+
 KNOWN LIMITATION: tip labels are NOT italicized. toyplot 2.1.0's CSS-style
 validator rejects `font-style` even though its own PDF renderer supports it
 (a real inconsistency in the library, confirmed while building this script —
@@ -36,9 +42,33 @@ def main():
     ap.add_argument("--no-ladderize", action="store_true",
                      help="Skip ladderizing (sorting clades by size) — off by default means ladderized")
     ap.add_argument("--font-size", default="11px")
+    ap.add_argument("--root-outgroup",
+                     help="Comma-separated outgroup taxon name(s) -- substring-matched against tip labels, "
+                          "then rooted via toytree's native .root() (no gotree call needed here)")
     args = ap.parse_args()
 
     tree = toytree.tree(args.treefile)
+
+    if args.root_outgroup:
+        tip_labels = tree.get_tip_labels()
+        queries = [q.strip() for q in args.root_outgroup.split(",") if q.strip()]
+        matched = sorted({t for q in queries for t in tip_labels if q in t})
+        if not matched:
+            print(f"WARNING: --root-outgroup '{args.root_outgroup}' matched no tip label — tree left unrooted.", file=sys.stderr)
+        else:
+            try:
+                tree = tree.root(*matched)
+            except Exception:
+                # toytree hard-errors on a non-monophyletic outgroup (unlike gotree, which
+                # warns and reroots at the outgroup's LCA anyway) -- fall back to that same
+                # LCA behavior so phylo-render and phylo-itol agree on the rooting.
+                try:
+                    mrca = tree.get_mrca_node(*matched)
+                    tree = tree.root(mrca)
+                    print(f"WARNING: outgroup {matched} is not monophyletic — rooted at their common ancestor instead.", file=sys.stderr)
+                except Exception as exc:
+                    print(f"WARNING: rooting on {matched} failed ({exc}) — tree left as-is.", file=sys.stderr)
+
     if not args.no_ladderize:
         tree = tree.mod.ladderize()
 
