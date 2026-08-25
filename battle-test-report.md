@@ -21,6 +21,21 @@ Re-verified after the addition: all 8 `SKILL.md` files (was 6) have valid frontm
 
 All structural checks pass. Both aligner branches (muscle, mafft), both tree-tool branches (iqtree, raxml-ng+modeltest-ng), and the checkpoint-invalidation (SP1) logic were execution-tested end-to-end on real NCBI data. One bug found and fixed during testing (see below). Only remaining non-blocking item: `git init` not yet run, target GitHub repo name already exists.
 
+## Addendum (2026-08-25): preflight/phylo-taxon-sampling added
+
+New optional pre-preflight stage: `preflight/phylo-taxon-sampling` — broadens a seed FASTA with additional same-marker sequences from NCBI (genus/family/etc.) plus an outgroup, before `phylo-preflight`'s own validation runs. Selection pipeline (name-quality filter -> sequence-quality ranking -> >=99.9% redundancy collapse via `vsearch --cluster_fast` -> per-taxon cap, mirroring `trim_list.py`'s partition/cap pattern) plus outputs a per-taxon summary CSV and a per-accession metadata CSV (incl. `lat_lon` where available, and `drop_reason` for every dropped candidate, not just survivors).
+
+**Tested end-to-end against real NCBI data** (not just structurally reviewed): `--expand-taxon "Escherichia coli" --marker "16S ribosomal RNA" --outgroup-taxon "Salmonella enterica"` via `entrez-direct`'s `esearch`/`efetch` (piped, no `shell=True`) and `vsearch`. Confirmed: 10 candidates fetched, dedup collapsed 6 near-identical fragments, per-taxon cap kept 2/taxon, outgroup fetched and appended, both CSVs populated correctly (including a `duplicate_of_<accession>` trace for every collapsed candidate).
+
+**Bugs found and fixed during this real-data test** (would not have been caught by structural review alone):
+1. `shell=True` with f-string-interpolated taxon/marker strings — real command-injection risk. Rewritten to argv-list `subprocess.Popen` piping (`run_piped`), no shell involved.
+2. `esearch -retmax N` doesn't exist in this EDirect version (`ERROR: Unrecognized option -retmax`) — result capping moved to `efetch -start 1 -stop N`.
+3. The GenBank-record splitter (`re.split(r"\n//\n", text)`) strips each record's trailing `//` terminator, which the `ORIGIN` sequence-parsing regex depended on as an anchor — silently produced empty sequences for every record. Fixed by parsing `ORIGIN` to end-of-record instead of up to a now-absent `^//`.
+4. `parse_gb_record`'s returned dict omitted the `n_ambig` field it computed locally, causing a `KeyError` downstream in the priority-ranking step — caught only once real (non-empty) sequences reached that code path.
+5. A genus-level query (`"Escherichia"` with no `-stop` cap in early testing) took minutes and had to be killed — confirmed NCBI is slow/rate-limited on broad, uncapped queries without an API key; documented as SP3 in the sub-skill.
+
+Re-verified after fixes: all 9 `SKILL.md` files (was 8) have valid frontmatter, docs-corpus now covers 10 tools (added `entrez-direct`, `vsearch`), `pixi lock --dry-run` still resolves cleanly, script compiles.
+
 ## Structural checks
 
 | Check | Verdict | Value |
