@@ -11,6 +11,7 @@ The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent
 | # | Phase | Goal | Sub-Skill | Artifact produced |
 |:---|:---|:---|:---|:---|
 | *opt.* | **Taxon Sampling** (broaden dataset) | Pull additional same-marker sequences from NCBI (genus/family/etc.) + an outgroup, before preflight. Not gated — user-triggered. | `preflight/phylo-taxon-sampling` | `$RUN_DIR/taxon_sampling/expanded.fasta` + summary/metadata CSVs |
+| *opt.* | **Mito Extract** (marker from mitogenome) | Extract a single marker (16S, COI, etc.) from whole mitogenome sequences via BLASTN against a reference, before preflight. Not gated — user-triggered. | `preflight/phylo-mito-extract` | `$RUN_DIR/mito_extract/marker.fasta` + report |
 | **1** | **Preflight** (The Audit) | Validate inputs, compute evidence, write `preflight.md` + `params.json`. | `/preflight` | `$RUN_DIR/preflight.md` + `$RUN_DIR/params.json` |
 | **2** | **Run** (The Workflow) | Execute the main workflow. | `/build` | `$RUN_DIR/checkpoints/tree.done.json + trees/` |
 | **3** | **QC** (The Report) | Build the final report + automated interpretation (weak clades, long-branch outliers, outgroup monophyly). | `/qc` | `$RUN_DIR/qc-report.md` |
@@ -33,7 +34,7 @@ The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent
 
 ## Prerequisites
 
-- A pixi environment with the required tools: `muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree, toytree` (+ `entrez-direct, vsearch` if using the optional taxon-sampling stage).
+- A pixi environment with the required tools: `muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree, toytree` (+ `entrez-direct, vsearch` if using the optional taxon-sampling stage, + `blast` if using the optional mito-extract stage).
 - A multi-FASTA file of unaligned, same-marker sequences (at least 4 taxa) with unique sequence headers.
 
 ## Installation
@@ -65,6 +66,13 @@ python3 preflight/phylo-taxon-sampling/scripts/taxon_sampling.py \
     --esearch-cmd "pixi run --manifest-path pixi.toml esearch" \
     --efetch-cmd "pixi run --manifest-path pixi.toml efetch" \
     --vsearch-cmd "pixi run --manifest-path pixi.toml vsearch"
+
+# Optional: extract a single marker (e.g. 16S) from whole mitogenome sequences (before Phase 1)
+python3 preflight/phylo-mito-extract/scripts/extract_marker.py mitogenomes.fasta \
+    --marker-ref reference_16S.fasta \
+    -o "$RUN_DIR/mito_extract/marker.fasta" \
+    --blastn-cmd "pixi run --manifest-path pixi.toml blastn" \
+    --makeblastdb-cmd "pixi run --manifest-path pixi.toml makeblastdb"
 
 # Phase 1: Preflight
 RUN_DIR=/path/to/run
@@ -107,6 +115,10 @@ phylogenetics-agent/
 │   │   ├── SKILL.md
 │   │   └── scripts/
 │   │       └── taxon_sampling.py
+│   ├── phylo-mito-extract/            # Optional — extract a marker from whole mitogenomes
+│   │   ├── SKILL.md
+│   │   └── scripts/
+│   │       └── extract_marker.py
 │   └── phylo-preflight/SKILL.md      # Phase 1 — input validation
 ├── build/
 │   └── phylo-builder/SKILL.md        # Phase 2 — main workflow

@@ -19,6 +19,7 @@ toytree = "*"
 packaging = "*"  # toyplot's reportlab-based PNG export needs this; not pulled in transitively
 entrez-direct = "*"  # esearch/efetch for optional preflight/phylo-taxon-sampling NCBI retrieval
 vsearch = "*"  # --cluster_fast for the >=99.9% redundancy collapse in phylo-taxon-sampling
+blast = "*"  # blastn/makeblastdb for optional preflight/phylo-mito-extract marker extraction
 
 [tasks]
 # These are documentation entry points, not scripts — each sub-skill's SKILL.md has the

@@ -91,6 +91,8 @@ Auto-pick the default when the evidence is unambiguous. Ask only when the agent 
 
 **`preflight/phylo-taxon-sampling` is optional and user-triggered**, invoked *before* `preflight/phylo-preflight` when the user wants the FASTA broadened with more taxa (same genus/family/etc.) and/or an outgroup pulled from NCBI. Its output (`taxon_sampling/expanded.fasta`) becomes the input FASTA to the normal preflight gate — it does not bypass preflight's own validation. See `preflight/phylo-taxon-sampling/SKILL.md`.
 
+**`preflight/phylo-mito-extract` is optional and user-triggered**, also invoked *before* `preflight/phylo-preflight`, when the input is whole mitogenome sequences but the tree should be built from a single marker (16S, COI, Cytb, etc.). BLASTNs a reference marker sequence against the multi-taxon mitogenome FASTA and extracts the best-hit region per taxon. Its output (`mito_extract/marker.fasta`) becomes the input FASTA to the normal preflight gate, same handoff pattern as `phylo-taxon-sampling`. See `preflight/phylo-mito-extract/SKILL.md`.
+
 **Do not skip preflight.** The preflight sub-skill computes evidence and writes `params.json` that the run sub-skill consumes.
 
 **`visualize/phylo-itol` and `visualize/phylo-render` are optional and user-triggered**, not part of the Preflight→Run→QC gate chain. Invoke either (or both — they don't conflict) after `qc-report.md` exists: `phylo-itol` for interactive iTOL annotation datasets (label styling / colorstrip grouping, true italics), `phylo-render` for an offline scriptable SVG/PDF/PNG figure (no italics — a real toyplot limitation, see its SKILL.md). See `visualize/phylo-itol/SKILL.md` and `visualize/phylo-render/SKILL.md`.
@@ -170,6 +172,7 @@ The agent must stop and warn the user if:
 | "Visualize the tree" / "iTOL annotation" / "colorstrip" | Invoke `visualize/phylo-itol` — writes `itol/<sample>_labels.txt` (+ `_colorstrip.txt`, `_legend.md` if a grouping was given). Upload alongside the tree file at itol.embl.de. |
 | "Render a publication figure" / "export tree as PDF/SVG/PNG" | Invoke `visualize/phylo-render` — writes `figures/<sample>.{svg,pdf,png}`. No italics (toyplot limitation) — use `phylo-itol` instead if italic species names are required. |
 | "Add more taxa" / "pull sequences from NCBI" / "add an outgroup" | Invoke `preflight/phylo-taxon-sampling` *before* `preflight/phylo-preflight` — writes `taxon_sampling/expanded.fasta` + summary/metadata CSVs, then hand off to the normal preflight gate. |
+| "Extract 16S/COI from these mitogenomes" / "my input is whole mitogenomes" | Invoke `preflight/phylo-mito-extract` *before* `preflight/phylo-preflight` — writes `mito_extract/marker.fasta` + a report, then hand off to the normal preflight gate. Ask for a reference marker sequence (or an NCBI taxon to auto-fetch one from) if not already clear from the request. |
 | "Prune the tree" / "remove these taxa" / "drop misidentified sequences" | Invoke `prune/phylo-prune` — writes `pruned/<sample>_pruned.nwk` + a report. Ask which mode (keep list / exclude list / match a reference tree) if not already clear from the request. |
 
 ## Verification

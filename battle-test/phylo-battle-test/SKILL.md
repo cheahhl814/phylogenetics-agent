@@ -35,6 +35,7 @@ triggers:
 
 ```bash
 for f in SKILL.md preflight/phylo-preflight/SKILL.md preflight/phylo-taxon-sampling/SKILL.md \
+         preflight/phylo-mito-extract/SKILL.md \
          build/phylo-builder/SKILL.md \
          qc/phylo-qc/SKILL.md debug/phylo-debug/SKILL.md battle-test/phylo-battle-test/SKILL.md \
          prune/phylo-prune/SKILL.md \
@@ -70,7 +71,7 @@ done
 ### 4. Docs-corpus freshness
 
 ```bash
-for tool in muscle mafft trimal modeltest-ng raxml-ng iqtree gotree toytree entrez-direct vsearch; do
+for tool in muscle mafft trimal modeltest-ng raxml-ng iqtree gotree toytree entrez-direct vsearch blast; do
     d="docs-corpus/$tool"
     [ -f "$d/README.md" ] || { echo "$tool: MISSING README.md — FAIL"; continue; }
     if [ -f "$d/cli-reference.md" ] || [ -f "$d/github-readme.md" ] || [ -f "$d/web-docs.md" ]; then
