@@ -37,6 +37,7 @@ triggers:
 for f in SKILL.md preflight/phylo-preflight/SKILL.md preflight/phylo-taxon-sampling/SKILL.md \
          build/phylo-builder/SKILL.md \
          qc/phylo-qc/SKILL.md debug/phylo-debug/SKILL.md battle-test/phylo-battle-test/SKILL.md \
+         prune/phylo-prune/SKILL.md \
          visualize/phylo-itol/SKILL.md visualize/phylo-render/SKILL.md; do
     python3 -c "
 import yaml

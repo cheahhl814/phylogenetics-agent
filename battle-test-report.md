@@ -129,3 +129,20 @@ Enterobacteriaceae (*E. coli, Salmonella, Klebsiella*) clustered together; Firmi
 ## Handoff
 
 Verdict `PASS-WITH-WARNINGS`. Recommend: `git init`, first commit, decide on the GitHub repo name before pushing, then optionally `rsync -av --delete` to `~/.pi/agent/skills/phylogenetics-agent/`.
+
+## Addendum (2026-08-25, later same day): prune/phylo-prune added
+
+New optional stage: `prune/phylo-prune`, wrapping `gotree prune` (already a pipeline dependency, no new pixi deps or docs-corpus entries needed) instead of porting a hand-rolled Newick parser from the reference `prune-phylogenetic-tree` skill.
+
+**Investigated live** (against real IQ-TREE `.treefile`/`.contree` and RAxML-NG output from earlier test runs):
+- `gotree prune` correctly parses both `.treefile` and `.contree` formats without any special-casing — the "support before colon" ambiguity the reference skill's custom parser worked around is just standard Newick internal-node-label placement, which gotree already handles.
+- `gotree prune` sums branch lengths correctly when collapsing a single-child internal node left behind by a prune (verified: root-to-tip distances stayed additive/consistent after pruning) — this is the phylogenetically correct behavior, and simpler than the reference skill's "never collapse" design (which existed only to work around its own parser not summing lengths).
+- `gotree prune` silently ignores keep/exclude names that don't exist in the source tree rather than erroring — confirmed by testing a request with one bogus name mixed into a valid list. The wrapper script (`prune_tree.py`) does its own pre-check diff against `gotree stats tips` output and refuses to proceed (unless `--force`) so a typo or an unaccounted-for `_R_`-prefix (from `mafft --adjustdirection`, see the earlier strand-orientation addendum) doesn't silently change which taxa end up in the output.
+- `gotree prune` hard-refuses to produce a tree with fewer than 3 tips (`"only made of two tips"` error) — confirmed live; the wrapper translates this into a clearer message.
+- All 4 modes tested end-to-end on the real 10-genus test tree: `--keep` (explicit names), `--keep-file` (tipfile, cross-checked to produce an identical result to `--keep`), `--exclude-file`, `--reference-tree` (diff against another pruned tree).
+
+**Completed**:
+- `prune/phylo-prune/SKILL.md` (v1.0.0) — Inputs/Outputs contract, SP1–SP4 stop points, procedure, 5-row troubleshooting signature library, verification checklist, handoff.
+- `prune/phylo-prune/scripts/prune_tree.py` — thin gotree-flag-translation wrapper + pre-check diff + report writer, no shell=True (argv-list `subprocess.run`, consistent with `taxon_sampling.py`'s established convention).
+- Wired into orchestrator `SKILL.md` (stage-routing note + common-follow-ups row), `README.md` (pipeline table row, usage example, repo layout tree), `battle-test/phylo-battle-test/SKILL.md` (frontmatter-check loop).
+- Structural checks re-run: all 10 `SKILL.md` files pass frontmatter validation, `prune/phylo-prune/SKILL.md` has 9 signature-library rows, script compiles and `--help` runs clean.

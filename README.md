@@ -14,6 +14,7 @@ The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent
 | **1** | **Preflight** (The Audit) | Validate inputs, compute evidence, write `preflight.md` + `params.json`. | `/preflight` | `$RUN_DIR/preflight.md` + `$RUN_DIR/params.json` |
 | **2** | **Run** (The Workflow) | Execute the main workflow. | `/build` | `$RUN_DIR/checkpoints/tree.done.json + trees/` |
 | **3** | **QC** (The Report) | Build the final report. | `/qc` | `$RUN_DIR/qc-report.md` |
+| *opt.* | **Prune** (curate taxa) | Trim the final tree to a keep list / exclude list / reference-tree tip set via `gotree prune`. Not gated — user-triggered after QC. | `prune/phylo-prune` | `$RUN_DIR/pruned/*_pruned.nwk` |
 | *opt.* | **Visualize** (iTOL annotation) | Generate iTOL label-style + colorstrip datasets. Not gated — user-triggered after QC. | `visualize/phylo-itol` | `$RUN_DIR/itol/*.txt` |
 | *opt.* | **Render** (static figure) | Offline SVG/PDF/PNG figure via toytree — no browser/upload. Not gated. | `visualize/phylo-render` | `$RUN_DIR/figures/*.{svg,pdf,png}` |
 
@@ -78,6 +79,12 @@ pixi run qc
 # Inspect outputs
 cat $RUN_DIR/qc-report.md
 
+# Optional: prune the tree to a curated taxon subset (after QC, user-triggered, not gated)
+python3 prune/phylo-prune/scripts/prune_tree.py "$TREE" \
+    --exclude-file /path/to/exclude_list.txt \
+    -o "$RUN_DIR/pruned/tree_pruned.nwk" \
+    --gotree-cmd "pixi run gotree"
+
 # Optional: iTOL annotation datasets (after QC, user-triggered, not gated)
 python3 visualize/phylo-itol/scripts/itol_tip_labels.py "$TREE" -o "$RUN_DIR/itol/labels.txt" --gotree-cmd "pixi run gotree"
 python3 visualize/phylo-itol/scripts/itol_colorstrip.py "$TREE" -o "$RUN_DIR/itol/colorstrip.txt" --regex '^([A-Za-z]+)_' --gotree-cmd "pixi run gotree"
@@ -109,6 +116,11 @@ phylogenetics-agent/
 │   └── phylo-debug/SKILL.md          # Failure interpreter (signature library)
 ├── battle-test/
 │   └── phylo-battle-test/SKILL.md    # Structural smoke tests
+├── prune/
+│   └── phylo-prune/                  # Optional — curate taxa via gotree prune
+│       ├── SKILL.md
+│       └── scripts/
+│           └── prune_tree.py
 ├── visualize/                           # Both optional, not gated, don't conflict
 │   ├── phylo-itol/                   # Interactive iTOL annotation datasets
 │   │   ├── SKILL.md

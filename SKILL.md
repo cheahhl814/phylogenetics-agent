@@ -87,13 +87,15 @@ Auto-pick the default when the evidence is unambiguous. Ask only when the agent 
 | `preflight` | Invoke `preflight/phylo-preflight`. Validates inputs, writes `preflight.md` + `params.json`. |
 | `run` | Invoke `build/phylo-builder`. Runs the main workflow. |
 | `qc` | Invoke `qc/phylo-qc`. Builds the final report. |
-| `qc-done` | Show the user `$RUN_DIR/qc-report.md`. Ask if they want `visualize/phylo-itol` or `visualize/phylo-render` next (both optional — not Go/No-Go gated phases). |
+| `qc-done` | Show the user `$RUN_DIR/qc-report.md`. Ask if they want `prune/phylo-prune`, `visualize/phylo-itol`, or `visualize/phylo-render` next (all optional — not Go/No-Go gated phases). |
 
 **`preflight/phylo-taxon-sampling` is optional and user-triggered**, invoked *before* `preflight/phylo-preflight` when the user wants the FASTA broadened with more taxa (same genus/family/etc.) and/or an outgroup pulled from NCBI. Its output (`taxon_sampling/expanded.fasta`) becomes the input FASTA to the normal preflight gate — it does not bypass preflight's own validation. See `preflight/phylo-taxon-sampling/SKILL.md`.
 
 **Do not skip preflight.** The preflight sub-skill computes evidence and writes `params.json` that the run sub-skill consumes.
 
 **`visualize/phylo-itol` and `visualize/phylo-render` are optional and user-triggered**, not part of the Preflight→Run→QC gate chain. Invoke either (or both — they don't conflict) after `qc-report.md` exists: `phylo-itol` for interactive iTOL annotation datasets (label styling / colorstrip grouping, true italics), `phylo-render` for an offline scriptable SVG/PDF/PNG figure (no italics — a real toyplot limitation, see its SKILL.md). See `visualize/phylo-itol/SKILL.md` and `visualize/phylo-render/SKILL.md`.
+
+**`prune/phylo-prune` is optional and user-triggered**, also after `qc-report.md` exists. Trims the final tree down to a curated subset of taxa (keep list, exclude list, or diff against a reference pruned tree) via `gotree prune`. Run it before `visualize/phylo-itol`/`phylo-render` if the user wants the visualization built on the pruned tree instead of the full one. See `prune/phylo-prune/SKILL.md`.
 
 ### 0.4 The run command
 
@@ -168,6 +170,7 @@ The agent must stop and warn the user if:
 | "Visualize the tree" / "iTOL annotation" / "colorstrip" | Invoke `visualize/phylo-itol` — writes `itol/<sample>_labels.txt` (+ `_colorstrip.txt`, `_legend.md` if a grouping was given). Upload alongside the tree file at itol.embl.de. |
 | "Render a publication figure" / "export tree as PDF/SVG/PNG" | Invoke `visualize/phylo-render` — writes `figures/<sample>.{svg,pdf,png}`. No italics (toyplot limitation) — use `phylo-itol` instead if italic species names are required. |
 | "Add more taxa" / "pull sequences from NCBI" / "add an outgroup" | Invoke `preflight/phylo-taxon-sampling` *before* `preflight/phylo-preflight` — writes `taxon_sampling/expanded.fasta` + summary/metadata CSVs, then hand off to the normal preflight gate. |
+| "Prune the tree" / "remove these taxa" / "drop misidentified sequences" | Invoke `prune/phylo-prune` — writes `pruned/<sample>_pruned.nwk` + a report. Ask which mode (keep list / exclude list / match a reference tree) if not already clear from the request. |
 
 ## Verification
 
