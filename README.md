@@ -149,8 +149,10 @@ phylogenetics-agent/
 ├── docs-corpus/                         # Offline Markdown snapshot of upstream tool docs
 │   └── muscle/
 │       └── README.md
-└── test_smoke.py                       # Skill-level structural smoke test
+└── test_smoke.py                       # Skill-level structural smoke test (NOT shipped; see battle-test/ for QA)
 ```
+
+_Note: `test_smoke.py` is referenced above for historical reasons — the v1.0.0 phylogenetics-agent bundle does not actually ship a `test_smoke.py`. Use the battle-test sub-skill (`battle-test/phylo-battle-test/SKILL.md`) for structural validation._
 
 ## Provenance
 
