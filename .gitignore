@@ -18,6 +18,11 @@ docs-corpus/.fingerprints
 
 # Pixi
 .pixi/
+
+# Preflight session output (regenerated locally each run; contains personal-machine paths)
+preflight.md
+preflight_evidence.txt
+skill-built.md
 pixi.lock
 
 # Run-time checkpoints (per-run artifacts, not part of the skill itself)

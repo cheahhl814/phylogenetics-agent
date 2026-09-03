@@ -14,14 +14,14 @@
     "build a tree from these sequences",
     "MLTree"
   ],
-  "run_dir": "/home/cheahhl814/claude_workspace/bioinformatics/AIx-BIO/skills/phylogenetics-agent",
-  "skills_root": "/home/cheahhl814/claude_workspace/bioinformatics/AIx-BIO/skills",
+  "run_dir": "<phylogenetics-agent-install-path>",
+  "skills_root": "<AI-x-BIO-skills-checkout>",
   "github_org": "cheahhl814",
   "github_repo": "github.com/cheahhl814/phylogenetics-agent",
   "github_repo_status": "exists",
   "skill_shape": "multi-tool-pipeline",
   "sub_skills": ["preflight", "run", "qc", "debug", "battle-test"],
-  "source_pipeline": "/home/cheahhl814/claude_workspace/bioinformatics/PHYLOGENETIC/MLTree-main",
+  "source_pipeline": "<path-to-source-mltree-repo>",
   "tool_inventory": [
     {"name": "muscle", "version": "*", "role": "aligner (default)", "status": "found"},
     {"name": "mafft", "version": "*", "role": "aligner (alternative)", "status": "found"},
