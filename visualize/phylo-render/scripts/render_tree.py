@@ -48,6 +48,14 @@ def main():
     args = ap.parse_args()
 
     tree = toytree.tree(args.treefile)
+    # toytree's internal-label auto-detection heuristic silently drops raxml-ng's
+    # support labels (both .supportFBP and .supportTBE -- verified live against
+    # raxml-ng 1.2.0 output), leaving the support feature all-NaN even though the
+    # file carries them. If support came up empty, re-parse forcing internal
+    # labels into the support feature (same convention IQ-TREE files hit by
+    # auto-detection).
+    if not tree.get_node_data()["support"].notna().any():
+        tree = toytree.tree(args.treefile, internal_labels="support")
 
     if args.root_outgroup:
         tip_labels = tree.get_tip_labels()
