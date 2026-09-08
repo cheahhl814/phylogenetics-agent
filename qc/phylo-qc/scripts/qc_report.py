@@ -127,6 +127,16 @@ def main():
             if support not in (None, "", "N/A"):
                 internal_supports.append((float(support), int(e.get("topodepth", 0))))
 
+    # Normalize support scale: fraction-encoded trees (RAxML-NG
+    # .raxml.supportTBE/.supportFBP) carry 0–1 fractions, while percent-encoded
+    # trees (IQ-TREE .contree, most other bootstrapped Newicks) carry 0–100.
+    # gotree passes the raw value through unchanged, so detect the scale
+    # (max <= 1 => fractions) and rescale to percent before thresholding and
+    # formatting — otherwise mean support prints as "0.5%" instead of "50.9%"
+    # and every clade is falsely flagged below the usability threshold.
+    if internal_supports and max(s for s, _ in internal_supports) <= 1.0:
+        internal_supports = [(s * 100.0, n) for s, n in internal_supports]
+
     mean_support = statistics.mean(s for s, _ in internal_supports) if internal_supports else None
     min_support = min((s for s, _ in internal_supports), default=None)
     weak_clades = sorted(

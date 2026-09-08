@@ -1,8 +1,8 @@
 ---
 name: phylo-qc
 description: 'Summarize the phylogenetics-agent run into qc-report.md: taxa count, alignment length before/after trimming, mean/min bootstrap support, weak-clade list, long-branch outlier detection, outgroup monophyly check, and the ASCII tree render. Reads the 5 stage checkpoints from build/phylo-builder. Triggers: "summarize the tree", "qc the phylogenetics run", "phylo-qc", "tree report".'
-version: 1.1.0
-updated: "2026-08-25"
+version: 1.2.0
+updated: "2026-09-08"
 triggers:
   - "summarize the tree"
   - "qc the phylogenetics run"
@@ -91,6 +91,7 @@ python3 qc/phylo-qc/scripts/qc_report.py "$TREE" \
 `qc_report.py` (verified live against a real `.contree`/`.treefile` output, both a single-tip and a multi-tip outgroup case):
 
 - Parses `gotree stats edges` for per-branch length/support/topodepth — no regex over Newick text.
+- **Support-scale normalization (v1.2.0)**: fraction-encoded trees (RAxML-NG `.raxml.supportTBE`/`.supportFBP`, 0–1 fractions) are rescaled ×100 before thresholding/formatting; percent-encoded trees (IQ-TREE `.contree` etc.) pass through unchanged. Scale is auto-detected (max internal support ≤ 1 ⇒ fractions). Before this fix, TBE supports printed unscaled (mean "0.5%" instead of 50.9%) and every clade was falsely flagged below the 70 threshold.
 - **Weak clades**: internal edges below `--support-threshold` (default 70), reported with clade size.
 - **Long-branch outliers**: terminal edges whose length exceeds `median + 3×MAD` (default `--mad-k 3.0`) — skipped automatically if <4 tips (MAD is meaningless that small).
 - **Outgroup monophyly**: if `params.json`'s `outgroup` field is non-empty, matches it against real tip names (substring match, same convention as preflight) and runs `gotree stats monophyletic`.
