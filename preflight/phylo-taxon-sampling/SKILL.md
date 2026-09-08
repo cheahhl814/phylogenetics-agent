@@ -1,8 +1,8 @@
 ---
 name: phylo-taxon-sampling
-description: 'Optional, opt-in pre-preflight stage for phylogenetics-agent: broaden a seed FASTA with additional same-marker sequences from NCBI (same genus/family/etc.) and an outgroup, with name-quality filtering, sequence-quality ranking, >=99.9% redundancy collapse, and a per-taxon cap. Writes an expanded FASTA plus a per-taxon summary CSV and a per-accession metadata CSV (with GPS coordinates where available). Triggers: "add more taxa", "pull sequences from NCBI", "add an outgroup", "broaden this to the genus/family", "phylo-taxon-sampling".'
-version: 1.0.0
-updated: "2026-08-25"
+description: 'Optional, opt-in pre-preflight stage for phylogenetics-agent: broaden a seed FASTA with additional same-marker sequences from NCBI (same genus/family/etc., primary GenBank submissions only — RefSeq records excluded) and an outgroup, with name-quality filtering, sequence-quality ranking, >=99.9% redundancy collapse, and a per-taxon cap. Writes an expanded FASTA plus a per-taxon summary CSV and a per-accession metadata CSV (with GPS coordinates where available). Triggers: "add more taxa", "pull sequences from NCBI", "add an outgroup", "broaden this to the genus/family", "phylo-taxon-sampling".'
+version: 1.1.0
+updated: "2026-09-08"
 triggers:
   - "add more taxa"
   - "pull sequences from NCBI"
@@ -13,7 +13,9 @@ triggers:
 
 # phylo-taxon-sampling
 
-> **v1.0.0.** Optional taxon-sampling stage for `phylogenetics-agent`. Runs *before* `preflight/phylo-preflight`, not instead of it — its output (an expanded FASTA) is handed to the normal preflight, which still runs its own header/sequence-type checks. Only invoke this when the user wants sequences beyond what they already have (genus/family broadening, an outgroup) — a user with a complete, self-sufficient FASTA skips this entirely.
+> **v1.1.0.** Optional taxon-sampling stage for `phylogenetics-agent`. Runs *before* `preflight/phylo-preflight`, not instead of it — its output (an expanded FASTA) is handed to the normal preflight, which still runs its own header/sequence-type checks. Only invoke this when the user wants sequences beyond what they already have (genus/family broadening, an outgroup) — a user with a complete, self-sufficient FASTA skips this entirely.
+>
+> **Primary-submission-only (v1.1.0):** RefSeq records (`NC_`/`NG_`-style accessions) are **excluded**, not preferred. The esearch query carries `NOT srcdb_refseq[PROP]` and a post-fetch guard drops any straggler, logging it in `metadata.csv` with `drop_reason=refseq_excluded`. When a primary submission and its byte-identical RefSeq mirror both exist, the **primary accession is the one kept**. Type material still outranks ordinary primary submissions in the quality ranking.
 
 ## When to Use This Skill
 
@@ -95,7 +97,7 @@ If the user already has a seed FASTA of their own sequences, concatenate it with
 ### 2. Selection criteria (what the script does)
 
 1. **Name-quality filter**: drops `cf.` forms, unresolved `sp./spp.`, hybrids, and `uncultured`/`environmental sample`/`metagenome` entries — same spirit as `trim_list.py`'s organism-name filtering, adapted for phylogenetic (not biogeographic) use.
-2. **Sequence-quality ranking** (best first, within each taxon): (a) RefSeq or NCBI type-material flag, (b) fewest ambiguous (`N`/IUPAC) bases, (c) length closest to the taxon's median candidate length, (d) submission recency as a tie-break.
+2. **Sequence-quality ranking** (best first, within each taxon): (a) NCBI type-material flag (RefSeq is excluded upstream — primary-submission-only since v1.1.0), (b) fewest ambiguous (`N`/IUPAC) bases, (c) length closest to the taxon's median candidate length, (d) submission recency as a tie-break.
 3. **Redundancy collapse**: `vsearch --cluster_fast --id 0.999` within each taxon's candidate pool — sequences ≥99.9% identical are collapsed to the single highest-ranked representative; the rest are recorded in `metadata.csv` as `duplicate_of_<accession>`, not silently discarded.
 4. **Per-taxon cap**: `n_per_taxon` (default 3) representatives kept per taxon, best-ranked first — mirrors `trim_list.py`'s two-pass `select_representatives` (exhaust the high-signal pool, then backfill).
 5. **Outgroup**: explicit taxon name (fetched directly, same quality ranking, no cap) or `--outgroup-auto` (one NCBI-taxonomy-parent step up from `expand_taxon`, excluding it — an approximate sister clade, always confirmed at SP2).
@@ -126,6 +128,7 @@ If the user already has a seed FASTA of their own sequences, concatenate it with
 - [ ] `$RUN_DIR/taxon_sampling/expanded.fasta` exists and has ≥1 sequence.
 - [ ] `summary.csv` and `metadata.csv` both exist; `metadata.csv` row count ≥ `summary.csv`'s total N kept (dropped candidates are retained for traceability).
 - [ ] Every kept row in `metadata.csv` has a non-empty `accession`/`organism`; `lat_lon` is `NA` where genuinely absent, not blank/missing.
+- [ ] No kept row has `is_refseq=True` (primary-submission-only rule).
 
 ## Handoff
 

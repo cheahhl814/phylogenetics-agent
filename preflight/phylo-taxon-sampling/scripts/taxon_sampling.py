@@ -3,12 +3,19 @@
 dataset (same genus/family/etc.) and optionally add an outgroup, with quality
 filtering, near-duplicate collapse, and a per-taxon representative cap.
 
-Pipeline: NCBI esearch/efetch (GenBank flat) -> name-quality filter
-          (drop cf./sp./hybrid/uncultured, like trim_list.py's organism filter)
-          -> sequence-quality ranking (length band, ambiguity, RefSeq/type
-          material, recency) -> >=99.9% redundancy collapse (vsearch
-          --cluster_fast) -> per-taxon cap (two-pass fill, like
-          trim_list.py's select_representatives) -> outgroup fetch.
+Primary-submission-only: RefSeq records (NC_/NG_-style accessions) are
+excluded at the esearch level (`NOT srcdb_refseq[PROP]`) and again as a
+post-fetch guard; excluded records are still logged in the metadata CSV with
+drop_reason=refseq_excluded for traceability. When a primary submission and
+its RefSeq counterpart describe the same sequence, the PRIMARY accession is
+the one kept.
+
+Pipeline: NCBI esearch/efetch (GenBank flat, RefSeq-excluded) -> RefSeq
+          guard -> name-quality filter (drop cf./sp./hybrid/uncultured, like
+          trim_list.py's organism filter) -> sequence-quality ranking (length
+          band, ambiguity, type material, recency) -> >=99.9% redundancy
+          collapse (vsearch --cluster_fast) -> per-taxon cap (two-pass fill,
+          like trim_list.py's select_representatives) -> outgroup fetch.
 
 Outputs: expanded FASTA, a per-taxon summary CSV, and a per-accession
 metadata CSV (kept AND dropped, for full traceability).
@@ -57,7 +64,10 @@ def run_piped(argv_list: list[list[str]]) -> str:
 
 
 def fetch_gb_records(taxon: str, marker: str, esearch_cmd: list[str], efetch_cmd: list[str], retmax: int) -> list[str]:
-    query = f'"{marker}"[Title] AND "{taxon}"[Organism]'
+    # NOT srcdb_refseq[PROP] keeps primary GenBank submissions only — RefSeq
+    # records are excluded at the source (mirrors mitotree-agent's
+    # fetch_mitogenomes.py v1.1.0 behavior).
+    query = f'"{marker}"[Title] AND "{taxon}"[Organism] NOT srcdb_refseq[PROP]'
     esearch_argv = [*esearch_cmd, "-db", "nucleotide", "-query", query]
     efetch_argv = [*efetch_cmd, "-format", "gb", "-start", "1", "-stop", str(retmax)]
     text = run_piped([esearch_argv, efetch_argv])
@@ -121,11 +131,13 @@ def name_quality_ok(organism: str, keep_cf: bool, keep_sp: bool) -> bool:
 
 def priority_key(rec: dict, expected_length: int, max_ambig_frac: float):
     """Lower is better. Mirrors trim_list.py's has-signal-first partitioning,
-    but ranked on sequence quality instead of GPS presence."""
+    but ranked on sequence quality instead of GPS presence. RefSeq never
+    appears here (excluded upstream); type material still outranks ordinary
+    primary submissions."""
     ambig_frac = (rec["n_ambig"] / rec["length"]) if rec["length"] else 1.0
     length_dev = abs(rec["length"] - expected_length) / expected_length if expected_length else 0.0
     return (
-        0 if rec["is_refseq"] or rec["is_type_material"] else 1,
+        0 if rec["is_type_material"] else 1,
         round(ambig_frac, 4),
         round(length_dev, 4),
         rec["submission_date"],  # lexicographic on DD-MON-YYYY is wrong order but stable tie-break only
@@ -178,7 +190,7 @@ def select_representatives(records: list[dict], n: int) -> list[dict]:
 def fetch_outgroup(outgroup_taxon: str, marker: str, esearch_cmd: list[str], efetch_cmd: list[str]) -> dict | None:
     text = fetch_gb_records(outgroup_taxon, marker, esearch_cmd, efetch_cmd, retmax=5)
     candidates = [r for rec in text if (r := parse_gb_record(rec))]
-    candidates = [r for r in candidates if r["sequence"]]
+    candidates = [r for r in candidates if r["sequence"] and not r["is_refseq"]]
     if not candidates:
         return None
     for r in candidates:
@@ -231,10 +243,16 @@ def main():
     raw = fetch_gb_records(args.expand_taxon, args.marker, args.esearch_cmd, args.efetch_cmd, args.retmax)
     all_records = [r for rec in raw if (r := parse_gb_record(rec))]
     all_records = [r for r in all_records if r["sequence"]]
+    # Post-fetch RefSeq guard (belt-and-braces behind the NOT srcdb_refseq[PROP]
+    # query filter; also catches records that slip through a custom --esearch-cmd).
+    # Excluded records stay in all_records so they appear in metadata.csv.
+    refseq_dropped = {r["accession"]: "refseq_excluded" for r in all_records if r["is_refseq"]}
+    working_records = [r for r in all_records if not r["is_refseq"]]
     print(f"Fetched: {len(all_records)} candidate records for '{args.expand_taxon}' / '{args.marker}'")
+    print(f"Primary-submission-only: {len(refseq_dropped)} RefSeq record(s) excluded")
 
-    filtered = [r for r in all_records if name_quality_ok(r["organism"], args.keep_cf, args.keep_sp)]
-    name_dropped = {r["accession"]: "name_quality" for r in all_records if r not in filtered}
+    filtered = [r for r in working_records if name_quality_ok(r["organism"], args.keep_cf, args.keep_sp)]
+    name_dropped = {r["accession"]: "name_quality" for r in working_records if r not in filtered}
     print(f"After name-quality filter: {len(filtered)} (dropped {len(name_dropped)})")
 
     by_taxon = defaultdict(list)
@@ -260,7 +278,7 @@ def main():
         kept_all.extend(reps)
 
         gps_n = sum(1 for r in reps if r["lat_lon"] != "NA")
-        best_q = "refseq/type" if any(r["is_refseq"] or r["is_type_material"] for r in reps) else "none"
+        best_q = "type_material" if any(r["is_type_material"] for r in reps) else "none"
         n_dropped_taxon = len(recs) - len(reps)
         summary_rows.append({
             "taxon": taxon, "n_kept": len(reps), "best_quality": best_q,
@@ -300,9 +318,10 @@ def main():
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
         for r in all_records:
-            drop_reason = name_dropped.get(r["accession"]) or \
-                (f"duplicate_of_{dup_dropped[r['accession']]}" if r["accession"] in dup_dropped else "") or \
-                cap_dropped.get(r["accession"], "")
+            drop_reason = ("refseq_excluded" if r["accession"] in refseq_dropped else
+                name_dropped.get(r["accession"]) or
+                (f"duplicate_of_{dup_dropped[r['accession']]}" if r["accession"] in dup_dropped else "") or
+                cap_dropped.get(r["accession"], ""))
             w.writerow({
                 "accession": r["accession"], "organism": r["organism"], "length": r["length"],
                 "n_ambig": r["n_ambig"], "country": r["country"], "collection_date": r["collection_date"],

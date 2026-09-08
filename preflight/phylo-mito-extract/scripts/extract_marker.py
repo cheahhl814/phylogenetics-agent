@@ -11,13 +11,21 @@ single genome), best hit per taxon, strand-corrected extraction. No
 annotation output (GFF3/BED), no tRNAscan-SE, no D-loop detection -- this
 skill only needs the one marker region per taxon for a single-marker tree.
 
+Direction contract: the reference marker sequence(s) (NCBI-fetched or
+user-supplied -- usually partial marker records) are the BLASTN *query*;
+the user's multi-taxon mitogenome FASTA is the BLASTN *database*. Target
+regions are always extracted FROM the user's own mitogenomes -- never the
+reverse (never cut the reference out of NCBI genomes and treat the user's
+sequences as the reference).
+
 Reference marker sequence(s) come from one of:
   --marker-ref FILE            user-supplied FASTA (1+ sequences)
   --fetch-marker-ref-taxon T   auto-fetch one sequence via NCBI esearch/efetch
                                 (mirrors preflight/phylo-taxon-sampling's
                                 fetch_gb_records/parse_gb_record, duplicated
                                 here rather than imported across sub-skill
-                                directories)
+                                directories; primary GenBank submissions only --
+                                RefSeq records are excluded)
 
 Requires blastn/makeblastdb on PATH (or pass --blastn-cmd/--makeblastdb-cmd,
 e.g. "pixi run blastn").
@@ -76,8 +84,11 @@ def reverse_complement(seq: str) -> str:
 
 def fetch_reference(taxon: str, marker: str, esearch_cmd: list[str], efetch_cmd: list[str]) -> tuple[str, str] | None:
     """Mirrors taxon_sampling.py's fetch_gb_records/parse_gb_record, trimmed to
-    just what's needed here: one best (longest, RefSeq-preferred) hit."""
-    query = f'"{marker}"[Title] AND "{taxon}"[Organism]'
+    just what's needed here: one best (longest) primary-submission hit.
+    RefSeq records are excluded (NOT srcdb_refseq[PROP] + post-fetch guard),
+    matching the primary-submission-only rule shared with
+    phylo-taxon-sampling and mitotree-agent."""
+    query = f'"{marker}"[Title] AND "{taxon}"[Organism] NOT srcdb_refseq[PROP]'
     text = run_piped([
         [*esearch_cmd, "-db", "nucleotide", "-query", query],
         [*efetch_cmd, "-format", "gb", "-start", "1", "-stop", "5"],
@@ -94,7 +105,10 @@ def fetch_reference(taxon: str, marker: str, esearch_cmd: list[str], efetch_cmd:
         if not seq:
             continue
         is_refseq = bool(REFSEQ_PREFIX_RE.match(accession))
-        candidates.append((0 if is_refseq else 1, -length, accession, seq))
+        candidates.append((1 if is_refseq else 0, -length, accession, seq))  # refseq never selected
+    if not candidates:
+        return None
+    candidates = [c for c in candidates if c[0] == 0]  # primary submissions only
     if not candidates:
         return None
     candidates.sort()
@@ -160,7 +174,7 @@ def main():
             sys.exit(1)
 
         bn = run(blastn + [
-            "-query", ref_fasta, "-db", db,
+            "-task", "blastn", "-query", ref_fasta, "-db", db,
             "-outfmt", "6 qseqid sseqid sstart send pident length bitscore",
             "-evalue", args.evalue, "-max_target_seqs", str(len(target_seqs)),
         ])

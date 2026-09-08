@@ -1,8 +1,8 @@
 ---
 name: phylo-mito-extract
 description: 'Extract a single marker region (16S, COI, Cytb, etc.) from a multi-taxon mitogenome FASTA via BLASTN against a reference marker sequence, so the result can be used as phylogenetics-agent normal single-marker input. Not full mitogenome annotation (no tRNAscan-SE, no D-loop, no GFF3/BED) -- just the one marker per taxon. Triggers: "extract 16S from mitogenome", "extract COI from mitogenome", "marker extraction", "mitogenome to marker sequences", "phylo-mito-extract".'
-version: 1.0.0
-updated: "2026-08-25"
+version: 1.1.0
+updated: "2026-09-08"
 triggers:
   - "extract 16S from mitogenome"
   - "extract COI from mitogenome"
@@ -13,7 +13,9 @@ triggers:
 
 # phylo-mito-extract
 
-> **v1.0.0.** Optional pre-preflight stage of `phylogenetics-agent`, run *before* `preflight/phylo-preflight` when the input is whole mitogenome sequences but the tree should be built from a single marker. Generalizes the BLAST-hit-extraction core of the project-local `blast_extract_cds.py` (full mitogenome annotation: 13 PCGs + 2 rRNAs + 22 tRNAs + D-loop, via a reference GFF/GenBank and tRNAscan-SE) down to one marker, extracted from a *multi-taxon* target FASTA in one BLASTN pass -- no annotation output, no tRNAscan-SE, no D-loop detection.
+> **v1.1.0.** Optional pre-preflight stage of `phylogenetics-agent`, run *before* `preflight/phylo-preflight` when the input is whole mitogenome sequences but the tree should be built from a single marker. Generalizes the BLAST-hit-extraction core of the project-local `blast_extract_cds.py` (full mitogenome annotation: 13 PCGs + 2 rRNAs + 22 tRNAs + D-loop, via a reference GFF/GenBank and tRNAscan-SE) down to one marker, extracted from a *multi-taxon* target FASTA in one BLASTN pass -- no annotation output, no tRNAscan-SE, no D-loop detection.
+>
+> **Direction contract (v1.1.0):** the reference marker sequence(s) — NCBI-fetched (usually partial marker records, primary GenBank submissions only since v1.1.0: RefSeq excluded) or user-supplied — are always the BLASTN **query**; the user's multi-taxon mitogenome FASTA is always the BLASTN **database**. Target regions are extracted FROM the user's own mitogenomes, never the reverse. BLASTN runs with `-task blastn` (not the `megablast` default) so divergent partial references still hit — verified live: a 94%-identity reference with mutations every ~15 bp was invisible to megablast but found immediately by `-task blastn`.
 
 ## When to Use This Skill
 
@@ -134,6 +136,8 @@ Read `$RUN_DIR/mito_extract/marker.fasta.report.txt`, route no-hit taxa through 
 - Do **not** treat this as a general mitogenome annotator — it extracts exactly one marker per taxon, nothing else. For full gene-set annotation (PCGs + rRNAs + tRNAs + D-loop with GFF3/BED output), use the project-local `blast_extract_cds.py` instead.
 - Do **not** silently proceed past SP2 (unconfirmed auto-fetched reference) — a wrong species/gene reference produces a plausible-looking but biologically wrong marker FASTA, and nothing downstream would catch it until the tree itself looks wrong.
 - Do **not** try to "fix" a no-hit taxon by relaxing `--evalue` before checking whether the reference is simply too divergent (SP3) — verified live that reference choice, not threshold, is the usual actual cause.
+- Do **not** omit `-task blastn` from the BLASTN call — the default `megablast` task silently misses divergent partial references (verified live: a 94%-identity reference with mutations every ~15 bp had no 28-mer seed and returned zero hits under megablast, but hit immediately with `-task blastn`; same fix as `mitotree-agent`'s `blast_extract_genes.py`).
+- Do **not** reverse the extraction direction — the reference marker(s) are the BLASTN query and the user's mitogenomes are the database; never cut the marker out of NCBI genomes and treat the user's sequences as the reference.
 
 ## Handoff
 
