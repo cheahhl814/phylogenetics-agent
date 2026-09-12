@@ -1,162 +1,174 @@
 # Phylogenetics Agent
 
-> **v1.0.0.** Checkpointed, agent-driven single-marker ML phylogenetics pipeline (align, trim, model-select, tree, render) with swappable tools at each stage and per-stage resume.
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](#-installation)
+[![Type](https://img.shields.io/badge/type-agent%20skill-blueviolet)](#-installation)
+[![Built with](https://img.shields.io/badge/built%20with-bioinfo--skill--creator-orange)](https://github.com/cheahhl814/bioinfo-skill-creator)
 
-This is the **phylogenetics-agent** skill, built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill.
+[![Shape](https://img.shields.io/badge/shape-multi--tool%20pipeline-8A2BE2)](#-pipeline-overview)
 
-## Pipeline Overview
+Agentic single-marker maximum-likelihood phylogenetic tree pipeline (align -> trim -> model-select -> tree -> render), inspired by the MLTree Nextflow pipeline, rebuilt as a checkpointed BettaMt-pattern skill with per-stage preflight, resumable checkpoints, and stage-swap flexibility (muscle/mafft aligner, raxml-ng/iqtree tree tool).
 
-The analysis follows a strict **3-phase evidence chain**. Moving to a subsequent phase requires passing a "Go/No-Go" quality gate AND emitting the artifact the next phase expects.
+**Repository**: https://github.com/cheahhl814/phylogenetics-agent
 
-| # | Phase | Goal | Sub-Skill | Artifact produced |
-|:---|:---|:---|:---|:---|
-| *opt.* | **Taxon Sampling** (broaden dataset) | Pull additional same-marker sequences from NCBI (genus/family/etc.) + an outgroup, before preflight. Not gated — user-triggered. | `preflight/phylo-taxon-sampling` | `$RUN_DIR/taxon_sampling/expanded.fasta` + summary/metadata CSVs |
-| *opt.* | **Mito Extract** (marker from mitogenome) | Extract a single marker (16S, COI, etc.) from whole mitogenome sequences via BLASTN against a reference, before preflight. Not gated — user-triggered. | `preflight/phylo-mito-extract` | `$RUN_DIR/mito_extract/marker.fasta` + report |
-| **1** | **Preflight** (The Audit) | Validate inputs, compute evidence, write `preflight.md` + `params.json`. | `/preflight` | `$RUN_DIR/preflight.md` + `$RUN_DIR/params.json` |
-| **2** | **Run** (The Workflow) | Execute the main workflow. | `/build` | `$RUN_DIR/checkpoints/tree.done.json + trees/` |
-| **3** | **QC** (The Report) | Build the final report + automated interpretation (weak clades, long-branch outliers, outgroup monophyly). | `/qc` | `$RUN_DIR/qc-report.md` |
-| *opt.* | **Prune** (curate taxa) | Trim the final tree to a keep list / exclude list / reference-tree tip set via `gotree prune`. Not gated — user-triggered after QC. | `prune/phylo-prune` | `$RUN_DIR/pruned/*_pruned.nwk` |
-| *opt.* | **Visualize** (iTOL annotation) | Generate iTOL label-style + colorstrip datasets. Not gated — user-triggered after QC. | `visualize/phylo-itol` | `$RUN_DIR/itol/*.txt` |
-| *opt.* | **Render** (static figure) | Offline SVG/PDF/PNG figure via toytree — no browser/upload. Not gated. | `visualize/phylo-render` | `$RUN_DIR/figures/*.{svg,pdf,png}` |
+> [!NOTE]
+> Current version: **v1.0.0** (updated 2026-08-24).
 
-## When to Use This Skill
+## Contents
 
-✅ **Use this skill** when you need to:
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Pipeline overview](#-pipeline-overview)
+- [Tools](#-tools)
+- [Update check](#-update-check)
+- [Repository layout](#-repository-layout)
+- [Hard guarantees](#-hard-guarantees)
+- [Provenance](#-provenance)
 
-- Build a maximum-likelihood phylogenetic tree from a multi-FASTA alignment of one marker (e.g. 16S, COI, a single-copy gene).
-- Want to swap the aligner (MUSCLE/MAFFT) or tree tool (RAxML-NG/IQ-TREE) mid-project without re-running the whole pipeline from scratch.
-- Need to resume a run that stopped partway (e.g. after alignment, before the bootstrap-heavy tree step) instead of re-running everything.
+## 🚀 Installation
 
-❌ **Do NOT use this skill** for:
+This is an **agent skill**, not a user-facing library. The recommended install path is to let your AI agent import it.
 
-- Multi-marker / whole-genome phylogenomics with concatenation or coalescent methods (out of scope; this is single-marker only).
-- You want the original rigid Nextflow DAG for HPC cohort batch runs with no agent involvement — use MLTree-main directly instead.
+**Option A — give your agent this prompt (recommended):**
 
-## Prerequisites
+```text
+Install the phylogenetics-agent skill from
+https://github.com/cheahhl814/phylogenetics-agent —
+clone it into your agent's skills directory (the path your agent watches
+for skills) and run `pixi install` from that directory. Then read the
+skill's SKILL.md to understand its phases and the Input/Output contract
+for each. Confirm when the environment is ready.
+```
 
-- A pixi environment with the required tools: `muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree, toytree` (+ `entrez-direct, vsearch` if using the optional taxon-sampling stage, + `blast` if using the optional mito-extract stage).
-- A multi-FASTA file of unaligned, same-marker sequences (at least 4 taxa) with unique sequence headers.
-
-## Installation
+**Option B — manual install:**
 
 ```bash
-# Initialize a pixi workspace (run once)
-pixi init phylogenetics-agent-env
-cd phylogenetics-agent-env
-
-# Add the required channels
-pixi workspace channel add conda-forge
-
-# Install all tools from the skill's pixi.toml
-pixi add --manifest-path /path/to/phylogenetics-agent/pixi.toml
+git clone https://github.com/cheahhl814/phylogenetics-agent.git
+cd phylogenetics-agent
+pixi install
 ```
 
-## Usage
+> [!TIP]
+> `pixi install` resolves every pinned tool from `pixi.toml` (channels: conda-forge, bioconda) into an isolated `.pixi/` environment — no system-wide installs, no version conflicts with other skills.
 
-The skill is normally driven by an AI agent that reads the master `SKILL.md`, detects the current stage from filesystem state, and routes to the right sub-skill. For manual invocation:
+## 💡 Usage
+
+The skill is designed to be driven by an AI agent: the agent reads the master `SKILL.md`, detects the current phase from the filesystem state of your run directory, and routes to the right sub-skill.
+
+### Natural-language prompts that trigger the skill
+
+```text
+phylogenetic tree
+ML tree
+maximum likelihood tree
+raxml
+iqtree
+```
+
+### Manual phase execution
+
+If you prefer to drive the phases yourself (or want to re-run a single phase):
 
 ```bash
-# Optional: broaden the FASTA with more taxa + an outgroup from NCBI (before Phase 1)
-python3 preflight/phylo-taxon-sampling/scripts/taxon_sampling.py \
-    --expand-taxon "Escherichia" --marker "16S ribosomal RNA" \
-    --outgroup-taxon "Salmonella enterica" \
-    -o "$RUN_DIR/taxon_sampling/expanded.fasta" \
-    --summary-out "$RUN_DIR/taxon_sampling/summary.csv" \
-    --metadata-out "$RUN_DIR/taxon_sampling/metadata.csv" \
-    --esearch-cmd "pixi run --manifest-path pixi.toml esearch" \
-    --efetch-cmd "pixi run --manifest-path pixi.toml efetch" \
-    --vsearch-cmd "pixi run --manifest-path pixi.toml vsearch"
+# Set your run directory (all phase artifacts land here)
+RUN_DIR=/path/to/run-dir
 
-# Optional: extract a single marker (e.g. 16S) from whole mitogenome sequences (before Phase 1)
-python3 preflight/phylo-mito-extract/scripts/extract_marker.py mitogenomes.fasta \
-    --marker-ref reference_16S.fasta \
-    -o "$RUN_DIR/mito_extract/marker.fasta" \
-    --blastn-cmd "pixi run --manifest-path pixi.toml blastn" \
-    --makeblastdb-cmd "pixi run --manifest-path pixi.toml makeblastdb"
-
-# Phase 1: Preflight
-RUN_DIR=/path/to/run
-pixi run preflight
-
-# Phase 2: Run (after Phase 1 passes)
-pixi run run
-
-# Phase 3: QC (after Phase 2 finishes)
-pixi run qc
-
-# Inspect outputs
-cat $RUN_DIR/qc-report.md
-
-# Optional: prune the tree to a curated taxon subset (after QC, user-triggered, not gated)
-python3 prune/phylo-prune/scripts/prune_tree.py "$TREE" \
-    --exclude-file /path/to/exclude_list.txt \
-    -o "$RUN_DIR/pruned/tree_pruned.nwk" \
-    --gotree-cmd "pixi run gotree"
-
-# Optional: iTOL annotation datasets (after QC, user-triggered, not gated)
-python3 visualize/phylo-itol/scripts/itol_tip_labels.py "$TREE" -o "$RUN_DIR/itol/labels.txt" --gotree-cmd "pixi run gotree"
-python3 visualize/phylo-itol/scripts/itol_colorstrip.py "$TREE" -o "$RUN_DIR/itol/colorstrip.txt" --regex '^([A-Za-z]+)_' --gotree-cmd "pixi run gotree"
-
-# Optional: offline SVG/PDF/PNG figure (after QC, user-triggered, not gated)
-python3 visualize/phylo-render/scripts/render_tree.py "$TREE" -o "$RUN_DIR/figures/tree"
+pixi run preflight   # Phase 1 — validate inputs, write preflight.md + params.json
+pixi run run         # Phase 2 — execute the workflow (after preflight ≥ GO)
+pixi run qc          # Phase 3 — build the final report (after run completes)
+pixi run debug       # On failure — interpret stderr via the signature library
+pixi run battle-test # Verify the skill's structural integrity
 ```
 
-Each phase has explicit **Inputs/Outputs contract** at the top of its sub-skill SKILL.md. If the upstream artifact is missing, the sub-skill **must refuse to proceed** and tell the user which upstream step to run.
+> [!IMPORTANT]
+> Each phase has an explicit **Inputs/Outputs contract** at the top of its sub-skill `SKILL.md`. If the upstream artifact is missing (e.g. you run `run` before `preflight` passed), the sub-skill refuses to proceed and tells you which phase to run first. Phases are gated on purpose — don't skip them.
 
-## Repository Layout
+## 🔬 Pipeline overview
 
+The analysis follows a phased evidence chain. Each phase consumes the artifacts of the previous phase and gates progression with a Go/No-Go check.
+
+| # | Phase | Goal | Sub-skill | Artifact produced |
+|:--|:------|:-----|:----------|:------------------|
+| **1** | **Preflight** | Phase preflight sub-skill | `preflight/` | `$RUN_DIR/preflight-artifact.md` |
+| **2** | **Run** | Phase run sub-skill | `run/` | `$RUN_DIR/run-artifact.md` |
+| **3** | **Qc** | Phase qc sub-skill | `qc/` | `$RUN_DIR/qc-artifact.md` |
+| **4** | **Debug** | Phase debug sub-skill | `debug/` | `$RUN_DIR/debug-artifact.md` |
+| **5** | **Battle-test** | Phase battle-test sub-skill | `battle-test/` | `$RUN_DIR/battle-test-artifact.md` |
+
+> [!TIP]
+> Read each sub-skill's `SKILL.md` for the full procedure, its ask-user stop points, and its signature library (stderr pattern → cause → fix).
+
+## 🧰 Tools
+
+All tools are resolved from conda-forge/bioconda via the pinned `pixi.toml`.
+
+| Tool | Version | Role |
+|:-----|:--------|:-----|
+| `muscle` | * | aligner (default) |
+| `mafft` | * | aligner (alternative) |
+| `trimal` | * | alignment trimming |
+| `modeltest-ng` | * | substitution model selection (raxml branch) |
+| `raxml-ng` | * | tree inference (default) |
+| `iqtree` | * | tree inference (alternative, built-in ModelFinder) |
+| `gotree` | * | ASCII tree rendering |
+
+Tool usage is grounded in the offline `docs-corpus/` snapshots (version-matched `--help`/`man` captures, upstream repo docs, and web docs as fallback) — the agent reads these instead of guessing flags.
+
+## 🔄 Update check
+
+Every skill built with [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) ships a self-update check that compares the deployed git SHA against this upstream repo via `git fetch` — no GitHub API call, no extra dependencies.
+
+```bash
+pixi run update-check
 ```
+
+| Verdict | Exit | Meaning |
+|:--------|:-----|:--------|
+| `UP-TO-DATE` | 0 | Local HEAD matches origin/HEAD |
+| `LOCAL-AHEAD` | 0 | Unpushed local commits; no action needed |
+| `BEHIND-BY-N` | 1 | Upstream is N commits ahead → re-pull/re-sync from this repo |
+| `OFFLINE` | 2 | `git fetch` failed; informational only |
+| `NO-ORIGIN` | 2 | No `origin` remote configured; informational only |
+
+## 📁 Repository layout
+
+```text
 phylogenetics-agent/
-├── SKILL.md                            # Master orchestrator (router only)
-├── README.md                           # This file
-├── pixi.toml                           # Pixi env: muscle, mafft, trimal, modeltest-ng, raxml-ng, iqtree, gotree, toytree
-├── preflight/
-│   ├── phylo-taxon-sampling/          # Optional — broaden FASTA via NCBI + outgroup
-│   │   ├── SKILL.md
-│   │   └── scripts/
-│   │       └── taxon_sampling.py
-│   ├── phylo-mito-extract/            # Optional — extract a marker from whole mitogenomes
-│   │   ├── SKILL.md
-│   │   └── scripts/
-│   │       └── extract_marker.py
-│   └── phylo-preflight/SKILL.md      # Phase 1 — input validation
-├── build/
-│   └── phylo-builder/SKILL.md        # Phase 2 — main workflow
-├── qc/
-│   └── phylo-qc/                     # Phase 3 — final report + automated interpretation
-│       ├── SKILL.md
-│       └── scripts/
-│           └── qc_report.py
-├── debug/
-│   └── phylo-debug/SKILL.md          # Failure interpreter (signature library)
-├── battle-test/
-│   └── phylo-battle-test/SKILL.md    # Structural smoke tests
-├── prune/
-│   └── phylo-prune/                  # Optional — curate taxa via gotree prune
-│       ├── SKILL.md
-│       └── scripts/
-│           └── prune_tree.py
-├── visualize/                           # Both optional, not gated, don't conflict
-│   ├── phylo-itol/                   # Interactive iTOL annotation datasets
-│   │   ├── SKILL.md
-│   │   └── scripts/
-│   │       ├── itol_tip_labels.py
-│   │       └── itol_colorstrip.py
-│   └── phylo-render/                 # Offline SVG/PDF/PNG figure (toytree)
-│       ├── SKILL.md
-│       └── scripts/
-│           └── render_tree.py
-├── docs-corpus/                         # Offline Markdown snapshot of upstream tool docs
+├── SKILL.md                 # Master orchestrator (router — start here)
+├── README.md                # This file
+├── pixi.toml                # Pinned tool environment (pixi install)
+├── docs-corpus/             # Offline snapshots of upstream tool docs
 │   └── muscle/
-│       └── README.md
-└── test_smoke.py                       # Skill-level structural smoke test (NOT shipped; see battle-test/ for QA)
+│   └── mafft/
+│   └── trimal/
+│   └── modeltest-ng/
+│   └── raxml-ng/
+│   └── iqtree/
+│   └── gotree/
+├── preflight/            # Phase sub-skill
+├── run/            # Phase sub-skill
+├── qc/            # Phase sub-skill
+├── debug/            # Phase sub-skill
+├── battle-test/            # Phase sub-skill
+├── bin/
+│   └── skill-update-check.py  # Self-update check (pixi run update-check)
+└── bin/
+    └── scaffold-render.py     # Reproducibility — re-render the skill from params.json
 ```
 
-_Note: `test_smoke.py` is referenced above for historical reasons — the v1.0.0 phylogenetics-agent bundle does not actually ship a `test_smoke.py`. Use the battle-test sub-skill (`battle-test/phylo-battle-test/SKILL.md`) for structural validation._
+## 🔒 Hard guarantees
+
+- **Filesystem evidence chain** — every phase emits the artifact the next phase consumes; the boundary between phases is the filesystem, not agent memory.
+- **Docs-grounded tool usage** — tool flags come from `docs-corpus/`, never from the agent's memory.
+- **Explicit stop points** — ambiguous decisions are surfaced to you as *Evidence + Recommend + Options*, not auto-picked.
+- **Reproducible environments** — every tool is pinned in `pixi.toml` and resolved via pixi.
+
+## 🚀 Nextflow runner
+
+This skill does not currently ship a Nextflow runner. For cohort/HPC execution, wrap the `pixi run` tasks in a workflow scheduler of your choice.
 
 ## Provenance
 
-Built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill. Pattern adopted from:
+Built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill (v1.1.0), following the AiX-BIO skill convention (preflight → build → debug → battle-test evidence chain). Pattern adopted from:
 
 - **BettaMt-agents** — https://github.com/cheahhl814/BettaMt-agents
 - **bacterial-genome-analysis** — https://github.com/cheahhl814/bacterial-genome-analysis
@@ -164,4 +176,4 @@ Built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-ski
 
 ## License
 
-Same as the rest of the AiX-BIO skill tree (private GitHub repo, MIT-style — see repository owner).
+Released under the MIT License — see the license file in this repository for details.
