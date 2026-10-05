@@ -1,8 +1,8 @@
 ---
 name: phylogenetics-agent
 description: Agentic single-marker maximum-likelihood phylogenetic tree pipeline (align -> trim -> model-select -> tree -> render), inspired by the MLTree Nextflow pipeline, rebuilt as a checkpointed BettaMt-pattern skill with per-stage preflight, resumable checkpoints, and stage-swap flexibility (muscle/mafft aligner, raxml-ng/iqtree tree tool).
-version: 1.0.0
-updated: "2026-08-24"
+version: 1.1.0
+updated: "2026-10-05"
 triggers:
   - "phylogenetic tree"
   - "ML tree"
@@ -209,3 +209,13 @@ After this orchestrator routes the user to a phase, the agent should explicitly 
 ## Provenance
 
 Built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill. Pattern adopted from [BettaMt-agents](https://github.com/cheahhl814/BettaMt-agents).
+
+
+## Dependencies → biodb-fetch (shared data lake)
+
+Consumes [biodb-fetch](https://github.com/cheahhl814/biodb-fetch) v1.0.0 (deployed at `~/.agents/skills/biodb-fetch/`) for single-marker ML trees — marker sequence retrieval when the user names accessions or a query:
+
+- `scripts/ncbi_fetch.py search/fetch` — field-qualified query discipline (translation-stable), rate limits, md5-verified sequences + shared store
+
+- **Shared store + contract v2**: payloads land in biodb-fetch's content-addressed `store/` (md5 `.sha256` sidecars); repeat requests return `cache=hit` in the `manifest.tsv` (accession/source/url/path/md5/retrieval_date/tool/format/contract_version/cache) — zero re-download across skills/batches; `--refresh` re-pulls; never parse biodb-fetch internals.
+- **Degradation**: biodb-fetch unavailable (not deployed / offline / preflight NO-GO) → proceed exactly as before with user-supplied files; note the deviation in the run report.
