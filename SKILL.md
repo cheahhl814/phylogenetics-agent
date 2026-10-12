@@ -1,8 +1,8 @@
 ---
 name: phylogenetics-agent
 description: Agentic single-marker maximum-likelihood phylogenetic tree pipeline (align -> trim -> model-select -> tree -> render), inspired by the MLTree Nextflow pipeline, rebuilt as a checkpointed BettaMt-pattern skill with per-stage preflight, resumable checkpoints, and stage-swap flexibility (muscle/mafft aligner, raxml-ng/iqtree tree tool).
-version: 1.1.0
-updated: "2026-10-05"
+version: 1.1.1
+updated: "2026-10-12"
 triggers:
   - "phylogenetic tree"
   - "ML tree"
@@ -200,7 +200,7 @@ pixi run update-check
 #   NO-ORIGIN        (2)  no `origin` remote configured; informational
 ```
 
-When `BEHIND-BY-N`, the script prints the canonical fix (rsync from `@skills/phylogenetics-agent/` to `~/.pi/agent/skills/phylogenetics-agent/` per AGENTS.md §4a, then `diff -rq` to verify). When `OFFLINE`, the script still prints `local_sha` + deployed version so the user can compare by hand. The full implementation is in `bin/skill-update-check.py` (synced from the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill v1.1.0+).
+When `BEHIND-BY-N`, the script prints the canonical fix (rsync from `@skills/phylogenetics-agent/` to `~/.pi/agent/skills/phylogenetics-agent/` per AGENTS.md §4a, then `diff -rq` to verify). When `OFFLINE`, the script still prints `local_sha` + deployed version so the user can compare by hand. The full implementation is in `bin/skill-update-check.py` (synced from the [skill-forge](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill v1.1.0+).
 
 ## Handoff pointers
 
@@ -208,7 +208,7 @@ After this orchestrator routes the user to a phase, the agent should explicitly 
 
 ## Provenance
 
-Built with the [bioinfo-skill-creator](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill. Pattern adopted from [BettaMt-agents](https://github.com/cheahhl814/BettaMt-agents).
+Built with the [skill-forge](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill. Pattern adopted from [BettaMt-agents](https://github.com/cheahhl814/BettaMt-agents).
 
 
 ## Dependencies → biodb-fetch (shared data lake)
