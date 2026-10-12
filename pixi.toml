@@ -30,3 +30,6 @@ run = "echo 'See build/phylo-builder/SKILL.md for the align/trim/model_select/tr
 qc = "echo 'See qc/phylo-qc/SKILL.md for the tree-report generation steps.'"
 debug = "echo 'See debug/phylo-debug/SKILL.md for the failure signature library.'"
 battle-test = "echo 'See battle-test/phylo-battle-test/SKILL.md for the structural smoke tests.'"
+# Self-check: compares this skill's git SHA to upstream (github.com/cheahhl814/phylogenetics-agent).
+# See bin/skill-update-check.py for the verdict legend (UP-TO-DATE / BEHIND-BY-N / OFFLINE).
+update-check = "python3 bin/skill-update-check.py"
