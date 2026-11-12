@@ -9,6 +9,7 @@ triggers:
   - "add an outgroup"
   - "broaden this to the genus/family"
   - "phylo-taxon-sampling"
+disable-model-invocation: true
 ---
 
 # phylo-taxon-sampling

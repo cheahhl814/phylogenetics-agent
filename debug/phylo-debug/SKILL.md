@@ -10,6 +10,7 @@ triggers:
   - "raxml crashed"
   - "iqtree error"
   - "muscle failed"
+disable-model-invocation: true
 ---
 
 # phylo-debug

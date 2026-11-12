@@ -12,6 +12,7 @@ triggers:
   - "phylogenetics agent"
   - "build a tree from these sequences"
   - "MLTree"
+disable-model-invocation: true
 ---
 
 # Phylogenetics Agent

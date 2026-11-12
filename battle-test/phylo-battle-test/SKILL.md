@@ -7,6 +7,7 @@ triggers:
   - "battle-test phylogenetics-agent"
   - "phylo-battle-test"
   - "is the tree skill ready"
+disable-model-invocation: true
 ---
 
 # phylo-battle-test

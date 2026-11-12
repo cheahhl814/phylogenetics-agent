@@ -9,6 +9,7 @@ triggers:
   - "marker extraction"
   - "mitogenome to marker sequences"
   - "phylo-mito-extract"
+disable-model-invocation: true
 ---
 
 # phylo-mito-extract

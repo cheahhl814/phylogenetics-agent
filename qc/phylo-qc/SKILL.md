@@ -8,6 +8,7 @@ triggers:
   - "qc the phylogenetics run"
   - "phylo-qc"
   - "tree report"
+disable-model-invocation: true
 ---
 
 # phylo-qc

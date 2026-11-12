@@ -9,6 +9,7 @@ triggers:
   - "drop misidentified sequences"
   - "exclude these sequences from the tree"
   - "phylo-prune"
+disable-model-invocation: true
 ---
 
 # phylo-prune

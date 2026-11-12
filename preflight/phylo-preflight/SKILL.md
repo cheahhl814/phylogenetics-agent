@@ -8,6 +8,7 @@ triggers:
   - "validate FASTA for tree"
   - "phylo-preflight"
   - "check sequences before tree building"
+disable-model-invocation: true
 ---
 
 # phylo-preflight

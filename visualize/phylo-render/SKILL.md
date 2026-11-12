@@ -10,6 +10,7 @@ triggers:
   - "export tree as SVG"
   - "phylo-render"
   - "toytree"
+disable-model-invocation: true
 ---
 
 # phylo-render

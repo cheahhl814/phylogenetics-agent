@@ -10,6 +10,7 @@ triggers:
   - "style the tree labels"
   - "phylo-itol"
   - "annotate the phylogenetic tree"
+disable-model-invocation: true
 ---
 
 # phylo-itol

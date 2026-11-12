@@ -9,6 +9,7 @@ triggers:
   - "resume tree build"
   - "phylo-builder"
   - "align and build a tree"
+disable-model-invocation: true
 ---
 
 # phylo-builder
