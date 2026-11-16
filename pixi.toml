@@ -1,6 +1,6 @@
 [workspace]
 name = "phylogenetics-agent"
-version = "1.0.0"
+version = "1.1.1"
 description = "Checkpointed, agent-driven single-marker ML phylogenetics pipeline (align, trim, model-select, tree, render) with swappable tools at each stage and per-stage resume."
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64"]

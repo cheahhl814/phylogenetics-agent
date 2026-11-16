@@ -1,0 +1,37 @@
+{
+  "skill": "phylogenetics-agent",
+  "note": "A/B tasks for bin/skill-ab.py. Pick 3-5 REAL tasks where the base model is weakest without this skill. Assertions are deterministic: contains | not_contains | regex | file_exists | cmd. This file is TODO-seeded at scaffold time; skill-ab refuses to run until the TODOs are replaced with real assertions.",
+  "value_claim": "TODO: what does the base model get wrong without this skill? (e.g. skips preflight, guesses tool flags instead of reading docs-corpus, loses checkpoint/resume discipline)",
+  "tasks": [
+    {
+      "id": "t1",
+      "prompt": "Build a maximum-likelihood tree from the 16S FASTA at <path>/input.fasta and tell me where the tree file landed.",
+      "assert": [
+        {
+          "type": "contains",
+          "value": "TODO: expected marker in the output"
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "prompt": "My phylogenetics run died after the align stage. Resume it without redoing the alignment.",
+      "assert": [
+        {
+          "type": "contains",
+          "value": "TODO: expected marker in the output"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "prompt": "Re-run the tree stage with IQ-TREE instead of RAxML-NG on the existing run directory.",
+      "assert": [
+        {
+          "type": "contains",
+          "value": "TODO: expected marker in the output"
+        }
+      ]
+    }
+  ]
+}

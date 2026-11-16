@@ -2,7 +2,7 @@
 name: phylogenetics-agent
 description: Agentic single-marker maximum-likelihood phylogenetic tree pipeline (align -> trim -> model-select -> tree -> render), inspired by the MLTree Nextflow pipeline, rebuilt as a checkpointed BettaMt-pattern skill with per-stage preflight, resumable checkpoints, and stage-swap flexibility (muscle/mafft aligner, raxml-ng/iqtree tree tool).
 version: 1.1.1
-updated: "2026-10-12"
+updated: "2026-11-16"
 triggers:
   - "phylogenetic tree"
   - "ML tree"
@@ -17,7 +17,7 @@ disable-model-invocation: true
 
 # Phylogenetics Agent
 
-> **v1.0.0.** Checkpointed, agent-driven single-marker ML phylogenetics pipeline (align, trim, model-select, tree, render) with swappable tools at each stage and per-stage resume.
+> Checkpointed, agent-driven single-marker ML phylogenetics pipeline (align, trim, model-select, tree, render) with swappable tools at each stage and per-stage resume.
 
 ## Audience
 
@@ -201,7 +201,7 @@ pixi run update-check
 #   NO-ORIGIN        (2)  no `origin` remote configured; informational
 ```
 
-When `BEHIND-BY-N`, the script prints the canonical fix (rsync from `@skills/phylogenetics-agent/` to `~/.pi/agent/skills/phylogenetics-agent/` per AGENTS.md §4a, then `diff -rq` to verify). When `OFFLINE`, the script still prints `local_sha` + deployed version so the user can compare by hand. The full implementation is in `bin/skill-update-check.py` (synced from the [skill-forge](https://github.com/cheahhl814/bioinfo-skill-creator) meta-skill v1.1.0+).
+When `BEHIND-BY-N`, the script prints the canonical fix (rsync from `@skills/phylogenetics-agent/` to `~/.agents/skills/phylogenetics-agent/` per AGENTS.md §4a, then `diff -rq` to verify). When `OFFLINE`, the script still prints `local_sha` + deployed version so the user can compare by hand. The full implementation is in `bin/skill-update-check.py` (rendered from the [skill-forge](https://github.com/cheahhl814/bioinfo-skill-creator) `bin/skill-update-check.py` template).
 
 ## Handoff pointers
 

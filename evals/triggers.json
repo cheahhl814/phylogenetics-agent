@@ -1,0 +1,14 @@
+{
+  "skill": "phylogenetics-agent",
+  "note": "Trigger probes for bin/skill-ab.py trigger. should_fire: seeded from triggers and rewritten as natural full requests. should_not_fire: near-miss prompts a sibling skill or the base model should own.",
+  "should_fire": [
+    "Build a maximum-likelihood phylogenetic tree from this 16S FASTA file",
+    "My phylogenetics run stopped after alignment; resume it from the checkpoint",
+    "Swap MAFFT for MUSCLE and redo the alignment stage of my tree pipeline"
+  ],
+  "should_not_fire": [
+    "Build a concatenated phylogenomic tree from my 900-locus whole-genome dataset",
+    "Fetch the cytochrome oxidase gene sequences for 40 species from NCBI",
+    "What is the best substitution model for protein data in general?"
+  ]
+}

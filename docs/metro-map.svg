@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif">
+<rect width="1600" height="900" fill="#ffffff"/>
+<text x="800" y="40" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="30" font-weight="800" fill="#14213d" text-anchor="middle" letter-spacing="0.5" >phylogenetics-agent</text>
+<text x="800" y="64" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="15" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >single-marker ML phylogenetic tree — checkpointed, resumable</text>
+<g transform="translate(0,70)">
+<rect x="30" y="45" width="340" height="640" rx="28" fill="#f4f6f8" stroke="#dde1e7" stroke-width="2"/>
+<circle cx="50" cy="20" r="17" fill="#14213d"/>
+<text x="50" y="26" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="17" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="0" >1</text>
+<text x="78" y="27" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="24" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0" >Preflight</text>
+<rect x="390" y="45" width="780" height="640" rx="28" fill="#f4f6f8" stroke="#dde1e7" stroke-width="2"/>
+<circle cx="410" cy="20" r="17" fill="#14213d"/>
+<text x="410" y="26" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="17" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="0" >2</text>
+<text x="438" y="27" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="24" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0" >Run (checkpointed)</text>
+<rect x="1190" y="45" width="380" height="640" rx="28" fill="#f4f6f8" stroke="#dde1e7" stroke-width="2"/>
+<circle cx="1210" cy="20" r="17" fill="#14213d"/>
+<text x="1210" y="26" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="17" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="0" >3</text>
+<text x="1238" y="27" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="24" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0" >QC &amp; deliver</text>
+<path d="M52 125 H190 C250 125 220 372 272 372" fill="none" stroke="#1fb37a" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="52" cy="125" r="6" fill="#fff" stroke="#1fb37a" stroke-width="3"/>
+<text x="52" y="79" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#14213d" text-anchor="start" letter-spacing="0" >phylo-taxon-sampling</text>
+<text x="52" y="94" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >pull same-marker sequences</text>
+<text x="52" y="107" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >from NCBI (esearch/efetch)</text>
+<text x="60" y="144" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#1fb37a" text-anchor="start" letter-spacing="0" font-style="italic">optional</text>
+<path d="M52 225 H190 C250 225 220 372 272 372" fill="none" stroke="#1fb37a" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="52" cy="225" r="6" fill="#fff" stroke="#1fb37a" stroke-width="3"/>
+<text x="52" y="179" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#14213d" text-anchor="start" letter-spacing="0" >phylo-mito-extract</text>
+<text x="52" y="194" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >BLAST a marker out of</text>
+<text x="52" y="207" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >whole mitogenomes</text>
+<text x="60" y="244" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#1fb37a" text-anchor="start" letter-spacing="0" font-style="italic">optional</text>
+<path d="M130 372 H297" fill="none" stroke="#12998a" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M130 388 H297" fill="none" stroke="#f5a00f" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<rect x="122" y="352" width="9" height="46" rx="3" fill="#14213d"/>
+<g transform="translate(70,355)"><path d="M5 5H31L41 15V55H5Z" fill="#c9ced6"/><path d="M0 0H26L36 10V50H0Z" fill="#fff" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/><path d="M26 0V10H36" fill="none" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/></g>
+<rect x="46.0" y="383" width="92" height="24" rx="5" fill="#14213d"/>
+<text x="92" y="400" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" >multi-FASTA</text>
+<text x="92" y="445" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >one marker, &gt;= 4 taxa</text>
+<rect x="283" y="354" width="14" height="52" rx="7" fill="#fff" stroke="#14213d" stroke-width="3.5"/>
+<circle cx="299" cy="356" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<text x="240" y="425" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="middle" letter-spacing="0.6" >PREFLIGHT</text>
+<text x="240" y="441" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >preflight.md + params.json</text>
+<text x="240" y="455" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >GO / NO-GO · phylo-preflight</text>
+<path d="M297 372 H600 C640 372 640 270 690 270 H830 C880 270 890 372 945 372 H1270" fill="none" stroke="#12998a" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="M297 388 H600 C640 388 640 490 690 490 H900 C930 490 930 388 960 388 H1270" fill="none" stroke="#f5a00f" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<rect x="443" y="354" width="14" height="52" rx="7" fill="#fff" stroke="#14213d" stroke-width="3.5"/>
+<rect x="543" y="354" width="14" height="52" rx="7" fill="#fff" stroke="#14213d" stroke-width="3.5"/>
+<rect x="1033" y="354" width="14" height="52" rx="7" fill="#fff" stroke="#14213d" stroke-width="3.5"/>
+<circle cx="770" cy="270" r="9" fill="#fff" stroke="#14213d" stroke-width="4"/>
+<circle cx="710" cy="490" r="9" fill="#fff" stroke="#14213d" stroke-width="4"/>
+<circle cx="860" cy="490" r="9" fill="#fff" stroke="#14213d" stroke-width="4"/>
+<circle cx="460" cy="358" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<circle cx="560" cy="358" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<circle cx="1050" cy="358" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<circle cx="782" cy="257" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<circle cx="722" cy="477" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<circle cx="872" cy="477" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<g transform="translate(462,332) rotate(-32)">
+<text x="0" y="0" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0.6" >ALIGN</text>
+<text x="0" y="16" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >muscle · mafft</text>
+<text x="0" y="30" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >align -&gt; muscle -super5 / mafft --auto</text>
+</g>
+<text x="550" y="428" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="middle" letter-spacing="0.6" >TRIM</text>
+<text x="550" y="444" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >trimal</text>
+<g transform="translate(770,238) rotate(-32)">
+<text x="0" y="0" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0.6" >IQ-TREE</text>
+<text x="0" y="16" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >ModelFinder built in · iqtree</text>
+</g>
+<text x="710" y="525" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="middle" letter-spacing="0.6" >modeltest-ng</text>
+<text x="710" y="541" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >model selection</text>
+<text x="860" y="525" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="middle" letter-spacing="0.6" >RAXML-NG</text>
+<text x="860" y="541" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >ML tree + bootstrap · raxml-ng</text>
+<g transform="translate(1022,326) rotate(-38)">
+<text x="0" y="0" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0.6" >RENDER</text>
+<text x="0" y="16" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >gotree · ASCII tree</text>
+<text x="0" y="30" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >checkpoints/&lt;stage&gt;.done.json</text>
+</g>
+<path d="M1040 408 V565 Q1040 598 1007 598 H483 Q450 598 450 565 V408" fill="none" stroke="#6b7280" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M443 420 L450 406 L457 420Z" fill="#6b7280"/>
+<text x="725" y="625" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" font-weight="700" fill="#6b7280" text-anchor="middle" letter-spacing="0" >debug — on any failure -&gt; debug-report.md, resume from last checkpoint</text>
+<circle cx="412" cy="648" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<text x="424" y="652" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >every stage writes checkpoints/&lt;stage&gt;.done.json — resume supported</text>
+<rect x="1263" y="354" width="14" height="52" rx="7" fill="#fff" stroke="#14213d" stroke-width="3.5"/>
+<circle cx="1279" cy="356" r="4.5" fill="#14213d" stroke="#fff" stroke-width="1.5"/>
+<text x="1214" y="425" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="16" font-weight="800" fill="#14213d" text-anchor="start" letter-spacing="0.6" >QC</text>
+<text x="1214" y="441" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >qc-report.md · GO / NO-GO</text>
+<text x="1214" y="455" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >(qc/phylo-qc)</text>
+<path d="M1285 380 C1330 380 1310 170 1370 170 H1480" fill="none" stroke="#1fb37a" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1480" cy="170" r="6" fill="#fff" stroke="#1fb37a" stroke-width="3"/>
+<text x="1375" y="136" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#14213d" text-anchor="start" letter-spacing="0" >phylo-prune</text>
+<text x="1375" y="150" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >drop misidentified taxa</text>
+<text x="1375" y="162" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >(gotree prune)</text>
+<g transform="translate(1500,144)"><path d="M5 5H31L41 15V55H5Z" fill="#c9ced6"/><path d="M0 0H26L36 10V50H0Z" fill="#fff" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/><path d="M26 0V10H36" fill="none" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/></g>
+<text x="1519" y="212" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >pruned .nwk</text>
+<path d="M1285 380 C1330 380 1310 270 1370 270 H1480" fill="none" stroke="#1fb37a" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1480" cy="270" r="6" fill="#fff" stroke="#1fb37a" stroke-width="3"/>
+<text x="1375" y="236" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#14213d" text-anchor="start" letter-spacing="0" >phylo-itol</text>
+<text x="1375" y="250" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >iTOL label/colorstrip</text>
+<text x="1375" y="262" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >datasets</text>
+<g transform="translate(1500,244)"><path d="M5 5H31L41 15V55H5Z" fill="#c9ced6"/><path d="M0 0H26L36 10V50H0Z" fill="#fff" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/><path d="M26 0V10H36" fill="none" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/></g>
+<text x="1519" y="312" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >itol/*.txt</text>
+<path d="M1285 380 C1330 380 1310 370 1370 370 H1480" fill="none" stroke="#1fb37a" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1480" cy="370" r="6" fill="#fff" stroke="#1fb37a" stroke-width="3"/>
+<text x="1375" y="336" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#14213d" text-anchor="start" letter-spacing="0" >phylo-render</text>
+<text x="1375" y="350" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >offline SVG/PDF/PNG</text>
+<text x="1375" y="362" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >figure</text>
+<g transform="translate(1500,344)"><path d="M5 5H31L41 15V55H5Z" fill="#c9ced6"/><path d="M0 0H26L36 10V50H0Z" fill="#fff" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/><path d="M26 0V10H36" fill="none" stroke="#14213d" stroke-width="2.5" stroke-linejoin="round"/></g>
+<text x="1519" y="412" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="10.5" font-weight="400" fill="#6b7280" text-anchor="middle" letter-spacing="0" >tree.svg</text>
+<text x="1215" y="520" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="12" font-weight="700" fill="#6b7280" text-anchor="start" letter-spacing="1" >outputs</text>
+<rect x="1215.0" y="538" width="112" height="24" rx="5" fill="#14213d"/>
+<text x="1271.0" y="555" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" >qc-report.md</text>
+<rect x="1339.0" y="538" width="80" height="24" rx="5" fill="#14213d"/>
+<text x="1379.0" y="555" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" >tree.nwk</text>
+<rect x="1431.0" y="538" width="96" height="24" rx="5" fill="#14213d"/>
+<text x="1479.0" y="555" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" >figure.svg</text>
+<text x="1215" y="600" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >optional spurs may be run in any combination;</text>
+<text x="1215" y="614" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="11" font-weight="400" fill="#6b7280" text-anchor="start" letter-spacing="0" >prune first to build figures on the pruned tree</text>
+<rect x="30" y="705" width="1540" height="100" rx="20" fill="#f4f6f8" stroke="#dde1e7" stroke-width="2"/>
+<path d="M52 731 H100" fill="none" stroke="#12998a" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="114" y="736" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="15" font-weight="400" fill="#14213d" text-anchor="start" letter-spacing="0" >IQ-TREE route (ModelFinder)</text>
+<path d="M470 731 H518" fill="none" stroke="#f5a00f" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="532" y="736" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="15" font-weight="400" fill="#14213d" text-anchor="start" letter-spacing="0" >RAxML-NG route (modeltest-ng)</text>
+<rect x="920" y="716" width="14" height="30" rx="7" fill="#fff" stroke="#14213d" stroke-width="3.5"/>
+<text x="948" y="736" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="15" font-weight="400" fill="#14213d" text-anchor="start" letter-spacing="0" >shared station (both routes)</text>
+<path d="M52 781 H100" fill="none" stroke="#1fb37a" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M104 781 H112" fill="none" stroke="#6b7280" stroke-width="5" stroke-dasharray="1 10" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="126" y="786" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="15" font-weight="400" fill="#14213d" text-anchor="start" letter-spacing="0" >optional / failure detour</text>
+<circle cx="477" cy="781" r="5" fill="#14213d"/>
+<text x="532" y="786" font-family="Inter, Helvetica, Arial, 'DejaVu Sans', sans-serif" font-size="15" font-weight="400" fill="#14213d" text-anchor="start" letter-spacing="0" >checkpoint (resumable)</text>
+</g></svg>

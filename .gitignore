@@ -27,3 +27,14 @@ pixi.lock
 
 # Run-time checkpoints (per-run artifacts, not part of the skill itself)
 checkpoints/
+
+# Battle-test outputs (per-run; regenerated on demand)
+battle-test-report.md
+battle-test_evidence.txt
+exec-canary-report.md
+exec-canary_evidence.txt
+tool_search_results.txt
+tool-inventory.json
+
+# Tooling caches (local-only)
+.codebase-index/
